@@ -36,9 +36,6 @@ cp -f ../OpenBox/kernel-6.6/btf/*.patch ./target/linux/generic/hack-6.6/
 cp -f ../OpenBox/kernel-6.6/arm64/*.patch ./target/linux/generic/hack-6.6/
 cp -f ../OpenBox/kernel-6.6/net/*.patch ./target/linux/generic/hack-6.6/
 
-# FullCone module
-git clone https://$gitea/zhao/nft-fullcone package/new/nft-fullcone
-
 # IPv6 NAT
 git clone https://github.com/sbwml/packages_new_nat6 package/new/nat6
 
