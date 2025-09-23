@@ -92,6 +92,11 @@ pushd feeds/luci
 cat ../OpenBox/firewall4/luci-24.10/*.patch | patch -p1
 popd
 
+# luci-mod extra
+pushd feeds/luci
+cat ../OpenBox/luci/*.patch | patch -p1
+popd
+
 # opkg
 mkdir -p package/system/opkg/patches
 cp -rf ../OpenBox/opkg/* ./package/system/opkg/patches/
