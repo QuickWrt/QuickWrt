@@ -1,72 +1,188 @@
-#!/bin/bash -e
-export RED_COLOR='\e[1;31m'
-export GREEN_COLOR='\e[1;32m'
-export YELLOW_COLOR='\e[1;33m'
-export BLUE_COLOR='\e[1;34m'
-export PINK_COLOR='\e[1;35m'
-export SHAN='\e[1;33;5m'
-export RES='\e[0m'
+#!/usr/bin/env bash
+set -euo pipefail  # 更严格的安全设置
 
-GROUP=
-group() {
-    endgroup
-    echo "::group::  $1"
-    GROUP=1
+# =============================================================================
+# 颜色和样式配置
+# =============================================================================
+readonly RED_COLOR='\033[1;31m'
+readonly GREEN_COLOR='\033[1;32m'
+readonly YELLOW_COLOR='\033[1;33m'
+readonly BLUE_COLOR='\033[1;34m'
+readonly MAGENTA_COLOR='\033[1;35m'
+readonly CYAN_COLOR='\033[1;36m'
+readonly BOLD='\033[1m'
+readonly RESET='\033[0m'
+readonly BLINK='\033[5m'
+
+# =============================================================================
+# 全局常量定义
+# =============================================================================
+readonly SCRIPT_NAME="OpenWRT Build System"
+readonly SCRIPT_VERSION="1.0.0"
+readonly AUTHOR="OPPEN321"
+readonly BLOG="www.kejizero.online"
+readonly SUPPORTED_ARCHITECTURES=("rockchip" "x86_64")
+readonly REQUIRED_USER="zhao"
+
+# =============================================================================
+# 全局变量
+# =============================================================================
+GROUP_FLAG=false
+START_TIME=$(date +%s)
+CPU_CORES=$(( $(nproc --all) + 1 ))
+
+# =============================================================================
+# 函数定义
+# =============================================================================
+
+# 打印带颜色的消息
+print_color() {
+    local color=$1
+    shift
+    echo -e "${color}$*${RESET}"
 }
-endgroup() {
-    if [ -n "$GROUP" ]; then
-        echo "::endgroup::"
+
+# 打印错误消息并退出
+error_exit() {
+    print_color "$RED_COLOR" "❌ 错误: $1"
+    exit 1
+}
+
+# 打印警告消息
+print_warning() {
+    print_color "$YELLOW_COLOR" "⚠️  警告: $1"
+}
+
+# 打印成功消息
+print_success() {
+    print_color "$GREEN_COLOR" "✅ $1"
+}
+
+# 打印信息消息
+print_info() {
+    print_color "$BLUE_COLOR" "ℹ️  信息: $1"
+}
+
+# 验证必需的环境变量
+validate_environment() {
+    if [[ "$(whoami)" != "$REQUIRED_USER" ]] && [[ -z "${git_name:-}" || -z "${git_password:-}" ]]; then
+        error_exit "未授权访问。请设置认证信息后再执行此脚本。"
     fi
-    GROUP=
 }
 
-# 查看
-if [ "$(whoami)" != "zhao" ] && [ -z "$git_name" ] && [ -z "$git_password" ]; then
-    echo -e "\n${RED_COLOR} Not authorized. Execute the following command to provide authorization information:${RES}\n"
-    echo -e "${BLUE_COLOR} export git_name=your_username git_password=your_password${RES}\n"
-    exit 1
-fi
-
-# 打印头部
-echo -e ""
-echo -e "${BLUE_COLOR}╔═════════════════════════════════════════════════════════════╗${RES}"
-echo -e "${BLUE_COLOR}║${RES}                     OPENWRT BUILD SYSTEM                    ${BLUE_COLOR}║${RES}"
-echo -e "${BLUE_COLOR}╚═════════════════════════════════════════════════════════════╝${RES}"
-echo -e "${BLUE_COLOR}┌─────────────────────────────────────────────────────────────┐${RES}"
-echo -e "${BLUE_COLOR}│${RES}  🛠️   ${YELLOW_COLOR}Developer:${RES} OPPEN321                                    ${BLUE_COLOR}│${RES}"
-echo -e "${BLUE_COLOR}│${RES}  🌐  ${YELLOW_COLOR}Blog:${RES} www.kejizero.online                              ${BLUE_COLOR}│${RES}"
-echo -e "${BLUE_COLOR}│${RES}  💡  ${YELLOW_COLOR}Philosophy:${RES} Open Source · Customization · Performance  ${BLUE_COLOR}│${RES}"
-echo -e "${BLUE_COLOR}└─────────────────────────────────────────────────────────────┘${RES}"
-echo -e "${BLUE_COLOR}🔧 ${GREEN_COLOR}Building:${RES} $(date '+%Y-%m-%d %H:%M:%S')"
-echo -e "${BLUE_COLOR}══════════════════════════════════════════════════════════════${RES}"
-echo -e ""
-
-# 检测 Root
-if [ "$(id -u)" = "0" ]; then
-    export FORCE_UNSAFE_CONFIGURE=1 FORCE=1
-fi
-
-# 开始时间
-starttime=`date +'%Y-%m-%d %H:%M:%S'`
-CURRENT_DATE=$(date +%s)
-
-# 处理器核心数设置
-cores=`expr $(nproc --all) + 1`
-
-# 进度条设置
-if curl --help | grep progress-bar >/dev/null 2>&1; then
-    CURL_BAR="--progress-bar";
-fi
-
-SUPPORTED_BOARDS="rockchip x86_64"
-if [ -z "$1" ] || ! echo "$SUPPORTED_BOARDS" | grep -qw "$2"; then
-    echo -e "\n${RED_COLOR}Building type not specified or unsupported board: '$2'.${RES}\n"
-    echo -e "Usage:\n"
-
-    for board in $SUPPORTED_BOARDS; do
-        echo -e "$board releases: ${GREEN_COLOR}bash build.sh v24 $board${RES}"
+# 显示使用帮助
+show_usage() {
+    echo -e "\n${BOLD}使用方法:${RESET}"
+    echo -e "  bash $0 <version> <architecture>"
+    echo -e "\n${BOLD}支持的架构:${RESET}"
+    for arch in "${SUPPORTED_ARCHITECTURES[@]}"; do
+        echo -e "  • ${GREEN_COLOR}$arch${RESET}"
     done
-    echo
-    exit 1
-fi
+    echo -e "\n${BOLD}示例:${RESET}"
+    echo -e "  bash $0 v24 x86_64"
+    echo -e "  bash $0 v24 rockchip"
+}
 
+# 验证参数
+validate_arguments() {
+    local version="$1"
+    local arch="$2"
+    
+    if [[ -z "$version" ]]; then
+        error_exit "未指定版本号"
+    fi
+    
+    if [[ -z "$arch" ]]; then
+        error_exit "未指定目标架构"
+    fi
+    
+    local valid_arch=false
+    for supported_arch in "${SUPPORTED_ARCHITECTURES[@]}"; do
+        if [[ "$arch" == "$supported_arch" ]]; then
+            valid_arch=true
+            break
+        fi
+    done
+    
+    if [[ "$valid_arch" == false ]]; then
+        error_exit "不支持的架构: '$arch'"
+    fi
+}
+
+# 显示横幅
+show_banner() {
+    clear
+    echo -e ""
+    echo -e "${BOLD}${BLUE_COLOR}╔══════════════════════════════════════════════════════════════════╗${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}║${RESET}                        OPENWRT 自动化构建系统                    ${BOLD}${BLUE_COLOR}║${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}╚══════════════════════════════════════════════════════════════════╝${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}┌────────────────────────────────────────────────────────────────────┐${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}│${RESET}  🛠️   ${BOLD}开发者:${RESET} $AUTHOR                                              ${BOLD}${BLUE_COLOR}│${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}│${RESET}  🌐   ${BOLD}博客:${RESET} $BLOG                                    ${BOLD}${BLUE_COLOR}│${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}│${RESET}  💡   ${BOLD}理念:${RESET} 开源 · 定制化 · 高性能                                 ${BOLD}${BLUE_COLOR}│${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}│${RESET}  📦   ${BOLD}版本:${RESET} $SCRIPT_VERSION                                                  ${BOLD}${BLUE_COLOR}│${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}└────────────────────────────────────────────────────────────────────┘${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}══════════════════════════════════════════════════════════════════════${RESET}"
+    echo -e "${BOLD}🔧 ${GREEN_COLOR}构建开始时间:${RESET} $(date '+%Y-%m-%d %H:%M:%S')"
+    echo -e "${BOLD}⚡ ${GREEN_COLOR}处理器核心数:${RESET} $CPU_CORES"
+    echo -e "${BOLD}🐧 ${GREEN_COLOR}系统用户:${RESET} $(whoami)"
+    echo -e "${BOLD}${BLUE_COLOR}══════════════════════════════════════════════════════════════════════${RESET}"
+    echo -e ""
+}
+
+# 初始化构建环境
+setup_build_environment() {
+    if [[ "$(id -u)" == "0" ]]; then
+        export FORCE_UNSAFE_CONFIGURE=1
+        export FORCE=1
+        print_warning "以 root 权限运行，已启用强制不安全配置"
+    fi
+}
+
+# 设置下载进度条
+setup_curl_progress() {
+    if curl --help | grep -q progress-bar; then
+        CURL_OPTIONS="--progress-bar"
+    else
+        CURL_OPTIONS="--silent"
+    fi
+    export CURL_OPTIONS
+}
+
+# =============================================================================
+# 主程序逻辑
+# =============================================================================
+main() {
+    local version="${1:-}"
+    local architecture="${2:-}"
+    
+    # 参数验证
+    validate_arguments "$version" "$architecture"
+    
+    # 显示横幅
+    show_banner
+    
+    # 环境验证
+    validate_environment
+    
+    # 环境设置
+    setup_build_environment
+    setup_curl_progress
+    
+    print_success "初始化完成，开始构建 $architecture 架构的 $version 版本"
+    
+    # 记录开始时间
+    START_TIME=$(date +%s)
+}
+
+# 脚本入口点
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    # 如果没有提供足够的参数，显示使用帮助
+    if [[ $# -lt 2 ]]; then
+        show_usage
+        error_exit "参数不足，需要指定版本号和目标架构"
+    fi
+    
+    # 执行主程序
+    main "$@"
+fi
