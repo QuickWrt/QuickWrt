@@ -5,14 +5,9 @@
 sed -i 's/Os/O2/g' include/target.mk
 
 # 内核版本设置
-curl -s $mirror/tags/kernel-6.6 > include/kernel-6.6
-curl -s $mirror/openwrt/patch/kernel-6.6/kernel/0001-linux-module-video.patch > package/0001-linux-module-video.patch
+cp -rf ../OpenBox/kernel-6.6/kernel/0001-linux-module-video.patch ./package/0001-linux-module-video.patch
 git apply package/0001-linux-module-video.patch
 rm -rf package/0001-linux-module-video.patch
-
-# kenrel Vermagic
-sed -ie 's/^\(.\).*vermagic$/\1cp $(TOPDIR)\/.vermagic $(LINUX_DIR)\/.vermagic/' include/kernel-defaults.mk
-grep HASH include/kernel-6.6 | awk -F'HASH-' '{print $2}' | awk '{print $1}' | md5sum | awk '{print $1}' > .vermagic
 
 # 移除 SNAPSHOT 标签
 sed -i 's,-SNAPSHOT,,g' include/version.mk
@@ -20,115 +15,44 @@ sed -i 's,-SNAPSHOT,,g' package/base-files/image-config.in
 sed -i '/CONFIG_BUILDBOT/d' include/feeds.mk
 sed -i 's/;)\s*\\/; \\/' include/feeds.mk
 
-# patch source
-curl -s $mirror/openwrt/patch/generic-24.10/0001-tools-add-upx-tools.patch | patch -p1
-curl -s $mirror/openwrt/patch/generic-24.10/0002-rootfs-add-upx-compression-support.patch | patch -p1
-curl -s $mirror/openwrt/patch/generic-24.10/0003-rootfs-add-r-w-permissions-for-UCI-configuration-fil.patch | patch -p1
-curl -s $mirror/openwrt/patch/generic-24.10/0004-rootfs-Add-support-for-local-kmod-installation-sourc.patch | patch -p1
-
-### 获取额外的基础软件包 ###
-# rockchip - target
-rm -rf package/boot/{rkbin,uboot-rockchip,arm-trusted-firmware-rockchip}
-rm -rf target/linux/rockchip
-#cp -rf ../immortalwrt/target/linux/rockchip target/linux/rockchip
-#cp -rf ../immortalwrt/package/boot/uboot-rockchip package/boot/uboot-rockchip
-#cp -rf ../immortalwrt/package/boot/arm-trusted-firmware-rockchip package/boot/arm-trusted-firmware-rockchip
-#sed -i '/REQUIRE_IMAGE_METADATA/d' target/linux/rockchip/armv8/base-files/lib/upgrade/platform.sh
-
-# rockchip - target
-git clone https://$github/NeonPulse-Zero/rkbin package/boot/rkbin
-git clone https://$github/NeonPulse-Zero/uboot-rk35xx package/boot/uboot-rk35xx
-git clone https://$github/NeonPulse-Zero/uboot-rockchip package/boot/uboot-rockchip
-git clone https://$github/NeonPulse-Zero/arm-trusted-firmware-rockchip package/boot/arm-trusted-firmware-rockchip
-git clone https://$github/NeonPulse-Zero/target_linux_rockchip target/linux/rockchip
-sed -i '/REQUIRE_IMAGE_METADATA/d' target/linux/rockchip/armv8/base-files/lib/upgrade/platform.sh
 
 ### FW4 ###
-curl -s $mirror/openwrt/doc/firewall4/Makefile > package/network/config/firewall4/Makefile
+cp -rf ../OpenBox/firewall4/Makefile ./package/network/config/firewall4/Makefile
 sed -i 's|$(PROJECT_GIT)/project|https://github.com/openwrt|g' package/network/config/firewall4/Makefile
 mkdir -p package/network/config/firewall4/patches
-
-# add custom nft command support
-curl -s $mirror/openwrt/patch/firewall4/100-openwrt-firewall4-add-custom-nft-command-support.patch | patch -p1
-
-# fix ct status dnat
-curl -s $mirror/openwrt/patch/firewall4/firewall4_patches/990-unconditionally-allow-ct-status-dnat.patch > package/network/config/firewall4/patches/990-unconditionally-allow-ct-status-dnat.patch
-
-# fullcone
-curl -s $mirror/openwrt/patch/firewall4/firewall4_patches/999-01-firewall4-add-fullcone-support.patch > package/network/config/firewall4/patches/999-01-firewall4-add-fullcone-support.patch
-
-# bcm fullcone
-curl -s $mirror/openwrt/patch/firewall4/firewall4_patches/999-02-firewall4-add-bcm-fullconenat-support.patch > package/network/config/firewall4/patches/999-02-firewall4-add-bcm-fullconenat-support.patch
-
-# fix flow offload
-curl -s $mirror/openwrt/patch/firewall4/firewall4_patches/001-fix-fw4-flow-offload.patch > package/network/config/firewall4/patches/001-fix-fw4-flow-offload.patch
-
-# fw4 add custom nft command support
-curl -s $mirror/openwrt/patch/firewall4/firewall4_patches/100-fw4-add-custom-nft-command-support.patch > package/network/config/firewall4/patches/100-fw4-add-custom-nft-command-support.patch
+patch -p1 < ../OpenBox/firewall4/100-openwrt-firewall4-add-custom-nft-command-support.patch
+cp -rf ../OpenBox/firewall4/firewall4_patches package/network/config/firewall4/patches/
 
 # libnftnl
 mkdir -p package/libs/libnftnl/patches
-curl -s $mirror/openwrt/patch/firewall4/libnftnl/0001-libnftnl-add-fullcone-expression-support.patch > package/libs/libnftnl/patches/0001-libnftnl-add-fullcone-expression-support.patch
-curl -s $mirror/openwrt/patch/firewall4/libnftnl/0002-libnftnl-add-brcm-fullcone-support.patch > package/libs/libnftnl/patches/0002-libnftnl-add-brcm-fullcone-support.patch
-
-# kernel patch
-# btf: silence btf module warning messages
-curl -s $mirror/openwrt/patch/kernel-6.6/btf/990-btf-silence-btf-module-warning-messages.patch > target/linux/generic/hack-6.6/990-btf-silence-btf-module-warning-messages.patch
-# cpu model
-curl -s $mirror/openwrt/patch/kernel-6.6/arm64/312-arm64-cpuinfo-Add-model-name-in-proc-cpuinfo-for-64bit-ta.patch > target/linux/generic/hack-6.6/312-arm64-cpuinfo-Add-model-name-in-proc-cpuinfo-for-64bit-ta.patch
-# fullcone
-curl -s $mirror/openwrt/patch/kernel-6.6/net/952-net-conntrack-events-support-multiple-registrant.patch > target/linux/generic/hack-6.6/952-net-conntrack-events-support-multiple-registrant.patch
-# bcm-fullcone
-curl -s $mirror/openwrt/patch/kernel-6.6/net/982-add-bcm-fullcone-support.patch > target/linux/generic/hack-6.6/982-add-bcm-fullcone-support.patch
-curl -s $mirror/openwrt/patch/kernel-6.6/net/983-add-bcm-fullcone-nft_masq-support.patch > target/linux/generic/hack-6.6/983-add-bcm-fullcone-nft_masq-support.patch
-# shortcut-fe
-curl -s $mirror/openwrt/patch/kernel-6.6/net/601-netfilter-export-udp_get_timeouts-function.patch > target/linux/generic/hack-6.6/601-netfilter-export-udp_get_timeouts-function.patch
-curl -s $mirror/openwrt/patch/kernel-6.6/net/953-net-patch-linux-kernel-to-support-shortcut-fe.patch > target/linux/generic/hack-6.6/953-net-patch-linux-kernel-to-support-shortcut-fe.patch
+cp -f ../OpenBox/firewall4/libnftnl/*.patch ./package/libs/libnftnl/patches/
 
 # nftables
 mkdir -p package/network/utils/nftables/patches
-curl -s $mirror/openwrt/patch/firewall4/nftables/0001-nftables-add-fullcone-expression-support.patch > package/network/utils/nftables/patches/0001-nftables-add-fullcone-expression-support.patch
-curl -s $mirror/openwrt/patch/firewall4/nftables/0002-nftables-add-brcm-fullconenat-support.patch > package/network/utils/nftables/patches/0002-nftables-add-brcm-fullconenat-support.patch
-curl -s $mirror/openwrt/patch/firewall4/nftables/0003-drop-rej-file.patch > package/network/utils/nftables/patches/0003-drop-rej-file.patch
+cp -f ../OpenBox/firewall4/nftables/*.patch ./package/network/utils/nftables/patches/
+
+# kernel patch
+cp -f ../OpenBox/kernel-6.6/btf/*.patch ./target/linux/generic/hack-6.6/
+cp -f ../OpenBox/kernel-6.6/arm64/*.patch ./target/linux/generic/hack-6.6/
+cp -f ../OpenBox/kernel-6.6/net/*.patch ./target/linux/generic/hack-6.6/
 
 # FullCone module
 git clone https://$gitea/zhao/nft-fullcone package/new/nft-fullcone
 
 # IPv6 NAT
-git clone https://$github/sbwml/packages_new_nat6 package/new/nat6
+git clone https://github.com/sbwml/packages_new_nat6 package/new/nat6
 
 # Natflow
-git clone https://$github/sbwml/package_new_natflow package/new/natflow
+git clone https://github.com/sbwml/package_new_natflow package/new/natflow
 
 # Shortcut Forwarding Engine
-git clone https://$gitea/zhao/shortcut-fe package/new/shortcut-fe
-
-# ARM64 型号名称
-curl -s $mirror/openwrt/patch/arm64/kernel-6.6/312-arm64-cpuinfo-Add-model-name-in-proc-cpuinfo-for-64bit-ta.patch > target/linux/generic/hack-6.6/312-arm64-cpuinfo-Add-model-name-in-proc-cpuinfo-for-64bit-ta.patch
+git clone https://git.cooluc.com/sbwml/shortcut-fe package/new/shortcut-fe
 
 # BBRv3
-pushd target/linux/generic/backport-6.6
-    curl -Os $mirror/openwrt/patch/kernel-6.6/bbr3/010-0001-net-tcp_bbr-broaden-app-limited-rate-sample-detectio.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/bbr3/010-0002-net-tcp_bbr-v2-shrink-delivered_mstamp-first_tx_msta.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/bbr3/010-0003-net-tcp_bbr-v2-snapshot-packets-in-flight-at-transmi.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/bbr3/010-0004-net-tcp_bbr-v2-count-packets-lost-over-TCP-rate-samp.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/bbr3/010-0005-net-tcp_bbr-v2-export-FLAG_ECE-in-rate_sample.is_ece.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/bbr3/010-0006-net-tcp_bbr-v2-introduce-ca_ops-skb_marked_lost-CC-m.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/bbr3/010-0007-net-tcp_bbr-v2-adjust-skb-tx.in_flight-upon-merge-in.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/bbr3/010-0008-net-tcp_bbr-v2-adjust-skb-tx.in_flight-upon-split-in.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/bbr3/010-0009-net-tcp-add-new-ca-opts-flag-TCP_CONG_WANTS_CE_EVENT.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/bbr3/010-0010-net-tcp-re-generalize-TSO-sizing-in-TCP-CC-module-AP.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/bbr3/010-0011-net-tcp-add-fast_ack_mode-1-skip-rwin-check-in-tcp_f.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/bbr3/010-0012-net-tcp_bbr-v2-record-app-limited-status-of-TLP-repa.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/bbr3/010-0013-net-tcp_bbr-v2-inform-CC-module-of-losses-repaired-b.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/bbr3/010-0014-net-tcp_bbr-v2-introduce-is_acking_tlp_retrans_seq-i.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/bbr3/010-0015-tcp-introduce-per-route-feature-RTAX_FEATURE_ECN_LOW.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/bbr3/010-0016-net-tcp_bbr-v3-update-TCP-bbr-congestion-control-mod.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/bbr3/010-0017-net-tcp_bbr-v3-ensure-ECN-enabled-BBR-flows-set-ECT-.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/bbr3/010-0018-tcp-export-TCPI_OPT_ECN_LOW-in-tcp_info-tcpi_options.patch
-popd
+cp -rf ../OpenBox/kernel-6.6/bbr3/* ./target/linux/generic/backport-6.6/
 
 # LRNG
+cp -rf ../OpenBox/kernel-6.6/lrng/* ./target/linux/generic/hack-6.6/
 echo '
 # CONFIG_RANDOM_DEFAULT_IMPL is not set
 CONFIG_LRNG=y
@@ -140,103 +64,37 @@ CONFIG_LRNG_CPU=y
 CONFIG_LRNG_SELFTEST=y
 # CONFIG_LRNG_SELFTEST_PANIC is not set
 ' >>./target/linux/generic/config-6.6
-pushd target/linux/generic/hack-6.6
-    curl -Os $mirror/openwrt/patch/kernel-6.6/lrng/696-01-v59-0001-LRNG-Entropy-Source-and-DRNG-Manager.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/lrng/696-02-v59-0002-LRNG-allocate-one-DRNG-instance-per-NUMA-node.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/lrng/696-03-v59-0003-LRNG-proc-interface.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/lrng/696-04-v59-0004-LRNG-add-switchable-DRNG-support.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/lrng/696-05-v59-0005-LRNG-add-common-generic-hash-support.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/lrng/696-06-v59-0006-crypto-DRBG-externalize-DRBG-functions-for-LRNG.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/lrng/696-07-v59-0007-LRNG-add-SP800-90A-DRBG-extension.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/lrng/696-08-v59-0008-LRNG-add-kernel-crypto-API-PRNG-extension.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/lrng/696-09-v59-0009-LRNG-add-atomic-DRNG-implementation.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/lrng/696-10-v59-0010-LRNG-add-common-timer-based-entropy-source-code.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/lrng/696-11-v59-0011-LRNG-add-interrupt-entropy-source.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/lrng/696-12-v59-0012-scheduler-add-entropy-sampling-hook.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/lrng/696-13-v59-0013-LRNG-add-scheduler-based-entropy-source.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/lrng/696-14-v59-0014-LRNG-add-SP800-90B-compliant-health-tests.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/lrng/696-15-v59-0015-LRNG-add-random.c-entropy-source-support.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/lrng/696-16-v59-0016-LRNG-CPU-entropy-source.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/lrng/696-17-v59-0017-LRNG-add-Jitter-RNG-fast-noise-source.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/lrng/696-18-v59-0018-LRNG-add-option-to-enable-runtime-entropy-rate-c.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/lrng/696-19-v59-0019-LRNG-add-interface-for-gathering-of-raw-entropy.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/lrng/696-20-v59-0020-LRNG-add-power-on-and-runtime-self-tests.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/lrng/696-21-v59-0021-LRNG-sysctls-and-proc-interface.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/lrng/696-22-v59-0022-LRMG-add-drop-in-replacement-random-4-API.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/lrng/696-23-v59-0023-LRNG-add-kernel-crypto-API-interface.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/lrng/696-24-v59-0024-LRNG-add-dev-lrng-device-file-support.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/lrng/696-25-v59-0025-LRNG-add-hwrand-framework-interface.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/lrng/696-26-v59-01-config_base_small.patch
-    curl -Os $mirror/openwrt/patch/kernel-6.6/lrng/696-27-v59-02-sysctl-unconstify.patch
-popd
+
 
 ### Other Kernel Hack 部分 ###
 # make olddefconfig
-curl -sL $mirror/openwrt/patch/kernel-6.6/kernel/0003-include-kernel-defaults.mk.patch | patch -p1
+patch -p1 < ../OpenBox/kernel-6.6/kernel/0003-include-kernel-defaults.mk.patch
 # igc-fix
-curl -s $mirror/openwrt/patch/kernel-6.6/igc-fix/996-intel-igc-i225-i226-disable-eee.patch > target/linux/x86/patches-6.6/996-intel-igc-i225-i226-disable-eee.patch
+cp -rf ../OpenBox/kernel-6.6/igc-fix/* ./target/linux/x86/patches-6.6/
 # btf
-curl -s $mirror/openwrt/patch/kernel-6.6/btf/990-btf-silence-btf-module-warning-messages.patch > target/linux/generic/hack-6.6/990-btf-silence-btf-module-warning-messages.patch
-
-# 6.17_ppp_performance
-wget https://github.com/torvalds/linux/commit/95d0d09.patch -O target/linux/generic/pending-6.6/999-1-95d0d09.patch
-wget https://github.com/torvalds/linux/commit/1a3e9b7.patch -O target/linux/generic/pending-6.6/999-2-1a3e9b7.patch
-wget https://github.com/torvalds/linux/commit/7eebd21.patch -O target/linux/generic/pending-6.6/999-3-7eebd21.patch
-
-# ppp_fix
-wget -qO - https://github.com/immortalwrt/immortalwrt/commit/9d852a0.patch | patch -p1
+cp -rf ../OpenBox/kernel-6.6/btf/* ./target/linux/generic/hack-6.6/
 
 ### 个性化修改 ###
-sed -i "s/192.168.1.1/$LAN/g" package/base-files/files/bin/config_generate
+sed -i "s/192.168.1.1/10.0.0.1/g" package/base-files/files/bin/config_generate
 
 if [ -n "$ROOT_PASSWORD" ]; then
     # sha256 encryption
-    default_password=$(openssl passwd -5 $ROOT_PASSWORD)
+    default_password=$(openssl passwd -5 password)
     sed -i "s|^root:[^:]*:|root:${default_password}:|" package/base-files/files/etc/shadow
 fi
 
 sed -i 's/OpenWrt/ZeroWrt/' package/base-files/files/bin/config_generate
 
-curl -s $mirror/openwrt/doc/base-files/banner > package/base-files/files/etc/banner
-
-sed -i 's/--set=llvm\.download-ci-llvm=true/--set=llvm.download-ci-llvm=false/' feeds/packages/lang/rust/Makefile
-
-# Distfeeds.conf
-mkdir -p files/etc/opkg
-cat > files/etc/opkg/distfeeds.conf <<EOF
-src/gz openwrt_base https://mirrors.tuna.tsinghua.edu.cn/openwrt/releases/24.10.2/packages/$toolchain_arch/base
-src/gz openwrt_luci https://mirrors.tuna.tsinghua.edu.cn/openwrt/releases/24.10.2/packages/$toolchain_arch/luci
-src/gz openwrt_packages https://mirrors.tuna.tsinghua.edu.cn/openwrt/releases/24.10.2/packages/$toolchain_arch/packages
-src/gz openwrt_routing https://mirrors.tuna.tsinghua.edu.cn/openwrt/releases/24.10.2/packages/$toolchain_arch/routing
-src/gz openwrt_telephony https://mirrors.tuna.tsinghua.edu.cn/openwrt/releases/24.10.2/packages/$toolchain_arch/telephony
-EOF
-
-# Patch Luci add nft_fullcone/bcm_fullcone & shortcut-fe & natflow & ipv6-nat & custom nft command option
-pushd feeds/luci
-    curl -s $mirror/openwrt/patch/firewall4/luci-24.10/0001-luci-app-firewall-add-nft-fullcone-and-bcm-fullcone-.patch | patch -p1
-    curl -s $mirror/openwrt/patch/firewall4/luci-24.10/0002-luci-app-firewall-add-shortcut-fe-option.patch | patch -p1
-    curl -s $mirror/openwrt/patch/firewall4/luci-24.10/0003-luci-app-firewall-add-ipv6-nat-option.patch | patch -p1
-    curl -s $mirror/openwrt/patch/firewall4/luci-24.10/0004-luci-add-firewall-add-custom-nft-rule-support.patch | patch -p1
-    curl -s $mirror/openwrt/patch/firewall4/luci-24.10/0005-luci-app-firewall-add-natflow-offload-support.patch | patch -p1
-    curl -s $mirror/openwrt/patch/firewall4/luci-24.10/0006-luci-app-firewall-enable-hardware-offload-only-on-de.patch | patch -p1
-    curl -s $mirror/openwrt/patch/firewall4/luci-24.10/0007-luci-app-firewall-add-fullcone6-option-for-nftables-.patch | patch -p1
-popd
+cp -rf ../OpenBox/doc/base-files/etc/banner > package/base-files/files/etc/banner
 
 # luci-mod extra
 pushd feeds/luci
-    curl -s $mirror/openwrt/patch/luci/0001-luci-mod-system-add-modal-overlay-dialog-to-reboot.patch | patch -p1
-    curl -s $mirror/openwrt/patch/luci/0002-luci-mod-status-displays-actual-process-memory-usage.patch | patch -p1
-    curl -s $mirror/openwrt/patch/luci/0003-luci-mod-status-storage-index-applicable-only-to-val.patch | patch -p1
-    curl -s $mirror/openwrt/patch/luci/0004-luci-mod-status-firewall-disable-legacy-firewall-rul.patch | patch -p1
-    curl -s $mirror/openwrt/patch/luci/0005-luci-mod-system-add-refresh-interval-setting.patch | patch -p1
-    curl -s $mirror/openwrt/patch/luci/0006-luci-mod-system-mounts-add-docker-directory-mount-po.patch | patch -p1
-    curl -s $mirror/openwrt/patch/luci/0007-luci-mod-system-add-ucitrack-luci-mod-system-zram.js.patch | patch -p1
+cat ../OpenBox/firewall4/luci-24.10/*.patch | patch -p1
 popd
 
 # opkg
 mkdir -p package/system/opkg/patches
-curl -s $mirror/openwrt/patch/opkg/900-opkg-download-disable-hsts.patch > package/system/opkg/patches/900-opkg-download-disable-hsts.patch
-curl -s $mirror/openwrt/patch/opkg/901-libopkg-opkg_install-copy-conffiles-to-the-system-co.patch > package/system/opkg/patches/901-libopkg-opkg_install-copy-conffiles-to-the-system-co.patch
+cp -rf ../OpenBox/opkg/* ./package/system/opkg/patches/
 
 # TTYD
 sed -i 's/services/system/g' feeds/luci/applications/luci-app-ttyd/root/usr/share/luci/menu.d/luci-app-ttyd.json
