@@ -71,27 +71,6 @@ print_info() {
     print_color "$BLUE_COLOR" "ℹ️  信息: $1"
 }
 
-# GitHub Actions 日志分组
-start_group() {
-    local title="$1"
-    if [[ -n "${GITHUB_ACTIONS:-}" ]]; then
-        echo "::group::$title"
-        GROUP_FLAG=true
-    else
-        echo -e "\n${BOLD}${CYAN_COLOR}▶ ${title}${RESET}"
-        echo "${CYAN_COLOR}────────────────────────────────────────────${RESET}"
-    fi
-}
-
-end_group() {
-    if [[ "$GROUP_FLAG" == true ]]; then
-        echo "::endgroup::"
-        GROUP_FLAG=false
-    else
-        echo "${CYAN_COLOR}────────────────────────────────────────────${RESET}"
-    fi
-}
-
 # 验证必需的环境变量
 validate_environment() {
     if [[ "$(whoami)" != "$REQUIRED_USER" ]] && [[ -z "${git_name:-}" || -z "${git_password:-}" ]]; then
