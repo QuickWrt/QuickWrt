@@ -154,7 +154,7 @@ compilation_script() {
     print_success "检测到最新版本: $tag_version"
 
     print_info "开始克隆源代码仓库..."
-    git clone --depth=1 --quiet https://github.com/openwrt/openwrt -b "v$tag_version"
+    git -c advice.detachedHead=false clone --depth=1 --quiet https://github.com/openwrt/openwrt -b "v$tag_version"
     git clone --depth=1 --quiet -b openwrt-24.10 https://github.com/immortalwrt/immortalwrt
     git clone --depth=1 --quiet -b openwrt-24.10 https://github.com/openwrt/openwrt openwrt_snap
 
