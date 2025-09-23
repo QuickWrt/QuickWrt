@@ -112,30 +112,11 @@ sed -i '/ENV/i\export TERM=xterm-color' package/base-files/files/etc/profile
 # bash
 sed -i 's#ash#bash#g' package/base-files/files/etc/passwd
 sed -i '\#export ENV=/etc/shinit#a export HISTCONTROL=ignoredups' package/base-files/files/etc/profile
-mkdir -p files/root
-curl -so files/root/.bash_profile $mirror/openwrt/files/root/.bash_profile
-curl -so files/root/.bashrc $mirror/openwrt/files/root/.bashrc
 
-# rootfs files
-mkdir -p files/etc/sysctl.d
-mkdir -p files/etc/hotplug.d/iface
-mkdir -p files/etc/hotplug.d/net
-curl -so files/etc/sysctl.d/10-default.conf $mirror/openwrt/files/etc/sysctl.d/10-default.conf
-curl -so files/etc/sysctl.d/15-vm-swappiness.conf $mirror/openwrt/files/etc/sysctl.d/15-vm-swappiness.conf
-curl -so files/etc/sysctl.d/16-udp-buffer-size.conf $mirror/openwrt/files/etc/sysctl.d/16-udp-buffer-size.conf
-curl -so files/etc/hotplug.d/iface/99-zzz-odhcpd $mirror/openwrt/files/etc/hotplug.d/iface/99-zzz-odhcpd
-curl -so files/etc/hotplug.d/net/01-maximize_nic_rx_tx_buffers  $mirror/openwrt/files/etc/hotplug.d/net/01-maximize_nic_rx_tx_buffers
-
-# ZeroWrt Options Menu
-mkdir -p files/bin
-curl -so files/root/version.txt $mirror/openwrt/files/root/version.txt
-curl -so files/bin/ZeroWrt $mirror/openwrt/files/bin/ZeroWrt
-chmod +x files/bin/ZeroWrt
-chmod +x files/root/version.txt
-
-# key-build.pub
-curl -so files/root/key-build.pub https://opkg.kejizero.online/key-build.pub
-chmod +x files/root/key-build.pub
+# files
+mkdir files
+cp -rf ../OpenBox/files/* ./files/
+chmod -R +x files
 
 # NTP
 sed -i 's/0.openwrt.pool.ntp.org/ntp1.aliyun.com/g' package/base-files/files/bin/config_generate
