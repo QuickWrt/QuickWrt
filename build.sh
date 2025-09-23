@@ -180,9 +180,6 @@ compilation_script() {
         04-preset_homeproxy.sh
         05-rockchip_target_only.sh
         05-x86_64_target_only.sh
-        06-fix-source.sh
-        10-custom.sh
-        99_clean_build_cache.sh
     )
     
     for script in "${scripts[@]}"; do
@@ -197,7 +194,6 @@ compilation_script() {
     bash 02-prepare_adguard_core.sh
     bash 03-preset_mihimo_core.sh
     bash 04-preset_homeproxy.sh
-    bash 06-fix-source.sh
     
     # 执行架构特定脚本
     if [[ "$1" == "rockchip" ]]; then
