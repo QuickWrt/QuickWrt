@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail  # 更严格的安全设置
+set -euo pipefail  # 严格的安全设置
 
 # =============================================================================
 # 颜色和样式配置
@@ -12,15 +12,15 @@ readonly MAGENTA_COLOR='\033[1;35m'
 readonly CYAN_COLOR='\033[1;36m'
 readonly BOLD='\033[1m'
 readonly RESET='\033[0m'
-readonly BLINK='\033[5m'
 
 # =============================================================================
 # 全局常量定义
 # =============================================================================
-readonly SCRIPT_NAME="OpenWRT Build System"
+readonly SCRIPT_NAME="OpenWRT 构建系统"
 readonly SCRIPT_VERSION="1.0.0"
 readonly AUTHOR="OPPEN321"
 readonly BLOG="www.kejizero.online"
+readonly MIRROR="https://raw.githubusercontent.com/BlueStack-Sky/QuickWrt/refs/heads/master"
 readonly SUPPORTED_ARCHITECTURES=("rockchip" "x86_64")
 readonly REQUIRED_USER="zhao"
 
@@ -114,19 +114,17 @@ show_banner() {
     clear
     echo -e ""
     echo -e "${BOLD}${BLUE_COLOR}╔══════════════════════════════════════════════════════════════════╗${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET}                        OPENWRT 自动化构建系统                    ${BOLD}${BLUE_COLOR}║${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}║${RESET}                       OpenWRT 自动化构建系统                     ${BOLD}${BLUE_COLOR}║${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}╠══════════════════════════════════════════════════════════════════╣${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}║${RESET}  🛠️   ${BOLD}开发者:${RESET} $AUTHOR                                            ${BOLD}${BLUE_COLOR}║${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}║${RESET}  🌐   ${BOLD}博客:${RESET} $BLOG                                  ${BOLD}${BLUE_COLOR}║${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}║${RESET}  💡   ${BOLD}理念:${RESET} 开源 · 定制化 · 高性能                               ${BOLD}${BLUE_COLOR}║${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}║${RESET}  📦   ${BOLD}版本:${RESET} $SCRIPT_VERSION                                                ${BOLD}${BLUE_COLOR}║${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}╠══════════════════════════════════════════════════════════════════╣${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}║${RESET}  🔧 ${GREEN_COLOR}构建开始:${RESET} $(date '+%Y-%m-%d %H:%M:%S')                                ${BOLD}${BLUE_COLOR}║${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}║${RESET}  ⚡ ${GREEN_COLOR}处理器核心:${RESET} $CPU_CORES 个                                           ${BOLD}${BLUE_COLOR}║${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}║${RESET}  🐧 ${GREEN_COLOR}系统用户:${RESET} $(whoami)                                               ${BOLD}${BLUE_COLOR}║${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}╚══════════════════════════════════════════════════════════════════╝${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}┌────────────────────────────────────────────────────────────────────┐${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}│${RESET}  🛠️   ${BOLD}开发者:${RESET} $AUTHOR                                              ${BOLD}${BLUE_COLOR}│${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}│${RESET}  🌐   ${BOLD}博客:${RESET} $BLOG                                    ${BOLD}${BLUE_COLOR}│${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}│${RESET}  💡   ${BOLD}理念:${RESET} 开源 · 定制化 · 高性能                                 ${BOLD}${BLUE_COLOR}│${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}│${RESET}  📦   ${BOLD}版本:${RESET} $SCRIPT_VERSION                                                  ${BOLD}${BLUE_COLOR}│${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}└────────────────────────────────────────────────────────────────────┘${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}══════════════════════════════════════════════════════════════════════${RESET}"
-    echo -e "${BOLD}🔧 ${GREEN_COLOR}构建开始时间:${RESET} $(date '+%Y-%m-%d %H:%M:%S')"
-    echo -e "${BOLD}⚡ ${GREEN_COLOR}处理器核心数:${RESET} $CPU_CORES"
-    echo -e "${BOLD}🐧 ${GREEN_COLOR}系统用户:${RESET} $(whoami)"
-    echo -e "${BOLD}${BLUE_COLOR}══════════════════════════════════════════════════════════════════════${RESET}"
     echo -e ""
 }
 
@@ -149,9 +147,73 @@ setup_curl_progress() {
     export CURL_OPTIONS
 }
 
-# 
+# 编译脚本
 compilation_script() {
+    print_info "开始查询最新 OpenWRT 版本..."
+    tag_version="$(curl -s https://github.com/openwrt/openwrt/tags | grep -Eo "v[0-9\.]+\-*r*c*[0-9]*.tar.gz" | sed -n '/[2-9][4-9]/p' | sed -n 1p | sed 's/v//g' | sed 's/.tar.gz//g')"
+    print_success "检测到最新版本: $tag_version"
+
+    print_info "开始克隆源代码仓库..."
+    git clone --depth=1 --quiet https://github.com/openwrt/openwrt -b "v$tag_version"
+    git clone --depth=1 --quiet -b openwrt-24.10 https://github.com/immortalwrt/immortalwrt
+    git clone --depth=1 --quiet -b openwrt-24.10 https://github.com/openwrt/openwrt openwrt_snap
+
+    print_info "正在进行源代码处理..."
+    find openwrt/package/* -maxdepth 0 ! -name 'firmware' ! -name 'kernel' ! -name 'base-files' ! -name 'Makefile' -exec rm -rf {} +
+    rm -rf ./openwrt_snap/package/firmware ./openwrt_snap/package/kernel ./openwrt_snap/package/base-files ./openwrt_snap/package/Makefile
+    cp -rf ./openwrt_snap/package/* ./openwrt/package/
+    cp -rf ./openwrt_snap/feeds.conf.default ./openwrt/feeds.conf.default
+
+    print_info "为 Rockchip 架构替换 ImmortalWRT 组件以增强设备兼容性..."
+    rm -rf openwrt/package/boot/{rkbin,uboot-rockchip,arm-trusted-firmware-rockchip}
+    rm -rf openwrt/target/linux/rockchip
+    cp -rf immortalwrt/target/linux/rockchip openwrt/target/linux/rockchip
+    cp -rf immortalwrt/package/boot/uboot-rockchip openwrt/package/boot/uboot-rockchip
+    cp -rf immortalwrt/package/boot/arm-trusted-firmware-rockchip openwrt/package/boot/arm-trusted-firmware-rockchip
     
+    print_info "下载并执行构建脚本..."
+    local scripts=(
+        00-prepare_base.sh
+        01-prepare_package.sh
+        02-prepare_adguard_core.sh
+        03-preset_mihimo_core.sh
+        04-preset_homeproxy.sh
+        05-rockchip_target_only.sh
+        05-x86_64_target_only.sh
+        06-fix-source.sh
+        10-custom.sh
+        99_clean_build_cache.sh
+    )
+    
+    for script in "${scripts[@]}"; do
+        curl -sO "$MIRROR/scripts/$script"
+    done
+    
+    chmod 0755 ./*.sh
+    
+    # 执行基础准备脚本
+    bash 00-prepare_base.sh
+    bash 01-prepare_package.sh
+    bash 02-prepare_adguard_core.sh
+    bash 03-preset_mihimo_core.sh
+    bash 04-preset_homeproxy.sh
+    bash 06-fix-source.sh
+    
+    # 执行架构特定脚本
+    if [[ "$1" == "rockchip" ]]; then
+        bash 05-rockchip_target_only.sh
+        export core=arm64
+        print_success "Rockchip 架构配置完成"
+    elif [[ "$1" == "x86_64" ]]; then
+        bash 05-x86_64_target_only.sh
+        export core=amd64
+        print_success "x86_64 架构配置完成"
+    fi
+    
+    # 清理临时脚本文件
+    rm -f 0*-*.sh
+    print_success "构建环境准备完成"
+}
 
 # =============================================================================
 # 主程序逻辑
@@ -177,11 +239,16 @@ main() {
     
     # 记录开始时间
     START_TIME=$(date +%s)
+    
+    # 执行编译脚本
+    compilation_script "$architecture"
+    
+    # 计算构建时间
+    local end_time=$(date +%s)
+    local duration=$((end_time - START_TIME))
+    print_success "构建完成！总耗时: $((duration / 60)) 分 $((duration % 60)) 秒"
 }
 
-    # 执行编译脚本
-    compilation_script
-    
 # 脚本入口点
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     # 如果没有提供足够的参数，显示使用帮助
