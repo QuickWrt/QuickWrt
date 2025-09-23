@@ -173,6 +173,27 @@ compilation_script() {
 
     print_info "正在克隆 OpenBox 仓库以支持后续编译"
     git clone --depth=1 --quiet -b main https://github.com/BlueStack-Sky/OpenBox
+
+    print_info "正在复制密钥文件..."
+    if [ -d "openwrt" ]; then
+        cd openwrt || { printf "%b\n" "${RED_COLOR}进入 openwrt 目录失败${RES}"; exit 1; }
+
+        if cp -rf ../OpenBox/key.tar.gz ./key.tar.gz; then
+            if tar zxf key.tar.gz; then
+                rm -f key.tar.gz
+                print_info "密钥已复制并解压完成"
+            else
+                printf "%b\n" "${RED_COLOR}解压 key.tar.gz 失败${RES}"
+                exit 1
+            fi
+        else
+            printf "%b\n" "${RED_COLOR}复制 key.tar.gz 失败${RES}"
+            exit 1
+        fi
+    else
+        printf "%b\n" "${RED_COLOR}未找到 openwrt 源码目录，下载源码失败${RES}"
+        exit 1
+    fi
     
     print_info "下载并执行构建脚本..."
     local scripts=(
