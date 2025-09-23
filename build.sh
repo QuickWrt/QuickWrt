@@ -170,6 +170,9 @@ compilation_script() {
     cp -rf immortalwrt/target/linux/rockchip openwrt/target/linux/rockchip
     cp -rf immortalwrt/package/boot/uboot-rockchip openwrt/package/boot/uboot-rockchip
     cp -rf immortalwrt/package/boot/arm-trusted-firmware-rockchip openwrt/package/boot/arm-trusted-firmware-rockchip
+
+    print_info "正在克隆 OpenBox 仓库以支持后续编译"
+    git clone --depth=1 --quiet -b main https://github.com/BlueStack-Sky/OpenBox
     
     print_info "下载并执行构建脚本..."
     local scripts=(
