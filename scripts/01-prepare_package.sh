@@ -139,7 +139,7 @@ git clone https://github.com/sbwml/package_new_ftp package/new/ftp
 
 # SSRP & Passwall
 rm -rf feeds/packages/net/{xray-core,v2ray-core,v2ray-geodata,sing-box}
-git clone https://github.com/BlueStack-Sky/openwrt_helloworld package/new/helloworld -b v5
+git clone -b openwrt-24.10 https://github.com/BlueStack-Sky/openwrt_helloworld package/new/helloworld
 
 # openlist
 git clone https://github.com/sbwml/luci-app-openlist2 package/new/openlist --depth=1
