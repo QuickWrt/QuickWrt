@@ -471,7 +471,8 @@ main() {
 
     # 生成 Config 文件
     generate_config_file
-    
+}
+
 # 脚本入口点
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     # 如果没有提供足够的参数，显示使用帮助
