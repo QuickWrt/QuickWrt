@@ -284,6 +284,158 @@ compilation_script() {
     fi
 
     print_success "构建环境准备完成"
+
+    # 加载配置文件
+    print_info "加载配置文件..."
+    if [[ "$1" == "rockchip" ]]; then
+        echo -e "${BLUE_COLOR}├─ 选择 Rockchip 架构配置${RESET}"
+        if cp -rf ../OpenBox/Config/Rockchip.config ./.config; then
+            echo -e "${GREEN_COLOR}└─ ✓ Rockchip 配置文件加载完成${RESET}"
+            print_success "Rockchip 架构配置文件已加载"
+        else
+            error_exit "Rockchip 配置文件加载失败"
+        fi
+    elif [[ "$1" == "x86_64" ]]; then
+        echo -e "${BLUE_COLOR}├─ 选择 x86_64 架构配置${RESET}"
+        if cp -rf ../OpenBox/Config/X86_64.config ./.config; then
+            echo -e "${GREEN_COLOR}└─ ✓ x86_64 配置文件加载完成${RESET}"
+            print_success "x86_64 架构配置文件已加载"
+        else
+            error_exit "x86_64 配置文件加载失败"
+        fi
+    fi
+}
+
+# 缓存工具链
+cache_toolchain() {
+    print_info "下载工具链..."
+    echo -e "${BLUE_COLOR}├─ 检测系统信息...${RESET}"
+    
+    # 检测系统信息
+    if [[ -f /etc/os-release ]]; then
+        source /etc/os-release
+        echo -e "${GREEN_COLOR}│   ✓ 检测到系统: $PRETTY_NAME${RESET}"
+    else
+        echo -e "${YELLOW_COLOR}│   ⚠ 无法检测系统信息${RESET}"
+    fi
+    
+    echo -e "${BLUE_COLOR}├─ 下载工具链文件...${RESET}"
+    local TOOLCHAIN_URL="https://github.com/BlueStack-Sky/QuickWrt/releases/download/openwrt-24.10"
+    local toolchain_file="toolchain_musl_${toolchain_arch}_gcc-13.tar.zst"
+    
+    if curl -L ${TOOLCHAIN_URL}/${toolchain_file} -o toolchain.tar.zst ${CURL_OPTIONS}; then
+        echo -e "${GREEN_COLOR}│   ✓ 工具链下载完成${RESET}"
+    else
+        error_exit "工具链下载失败"
+    fi
+    
+    echo -e "${BLUE_COLOR}├─ 解压工具链...${RESET}"
+    if tar -I "zstd" -xf toolchain.tar.zst; then
+        echo -e "${GREEN_COLOR}│   ✓ 工具链解压完成${RESET}"
+    else
+        error_exit "工具链解压失败"
+    fi
+    
+    echo -e "${BLUE_COLOR}├─ 清理临时文件...${RESET}"
+    if rm -f toolchain.tar.zst; then
+        echo -e "${GREEN_COLOR}│   ✓ 临时文件清理完成${RESET}"
+    else
+        print_warning "清理临时文件时出现警告"
+    fi
+    
+    echo -e "${BLUE_COLOR}├─ 创建目录结构...${RESET}"
+    if mkdir -p bin; then
+        echo -e "${GREEN_COLOR}│   ✓ 目录创建完成${RESET}"
+    else
+        error_exit "创建目录失败"
+    fi
+    
+    echo -e "${BLUE_COLOR}├─ 更新文件时间戳...${RESET}"
+    if find ./staging_dir/ -name '*' -exec touch {} \; >/dev/null 2>&1 && \
+       find ./tmp/ -name '*' -exec touch {} \; >/dev/null 2>&1; then
+        echo -e "${GREEN_COLOR}└─ ✓ 文件时间戳更新完成${RESET}"
+    else
+        print_warning "更新文件时间戳时出现警告"
+    fi
+    
+    print_success "工具链缓存完成"
+}
+
+# 生成 Config 文件
+generate_config_file() {
+    print_info "生成 Config 文件..."
+    
+    echo -e "${BLUE_COLOR}├─ 清理临时目录...${RESET}"
+    if [ -d tmp ]; then
+        if rm -rf tmp/*; then
+            echo -e "${GREEN_COLOR}│   ✓ 临时目录已清理${RESET}"
+        else
+            print_warning "清理临时目录时出现警告"
+        fi
+    else
+        echo -e "${YELLOW_COLOR}│   ⚠ 未找到 tmp 目录，跳过清理${RESET}"
+    fi
+
+    echo -e "${BLUE_COLOR}├─ 执行 make defconfig...${RESET}"
+    if make defconfig; then
+        echo -e "${GREEN_COLOR}└─ ✓ Config 文件生成完成${RESET}"
+    else
+        error_exit "执行 make defconfig 失败"
+    fi
+
+    print_success "Config 文件生成完成"
+}
+
+# 开始编译
+compile_openwrt() {
+    starttime=`date +'%Y-%m-%d %H:%M:%S'`
+
+    if [ "$BUILD_TOOLCHAIN" = "y" ]; then
+        print_info "缓存工具链..."
+        echo -e "${BLUE_COLOR}├─ 编译工具链...${RESET}"
+        if make -j"$cores" toolchain/compile || make -j"$cores" toolchain/compile V=s; then
+            echo -e "${GREEN_COLOR}│   ✓ 工具链编译完成${RESET}"
+        else
+            error_exit "工具链编译失败"
+        fi
+
+        echo -e "${BLUE_COLOR}├─ 打包工具链缓存...${RESET}"
+        if mkdir -p toolchain-cache && \
+           tar -I "zstd -19 -T$(nproc --all)" -cf "toolchain-cache/toolchain_musl_${toolchain_arch}_gcc-13.tar.zst" \
+                ./build_dir ./dl ./staging_dir ./tmp; then
+            echo -e "${GREEN_COLOR}│   ✓ 工具链缓存完成${RESET}"
+        else
+            error_exit "工具链缓存打包失败"
+        fi
+
+        echo -e "${GREEN_COLOR}└─ ✓ 工具链任务完成${RESET}"
+        exit 0
+    else
+        print_info "开始编译 OpenWrt..."
+        echo -e "${BLUE_COLOR}├─ 执行 make 编译...${RESET}"
+        if make -j"$cores" IGNORE_ERRORS="n m"; then
+            echo -e "${GREEN_COLOR}│   ✓ 编译过程完成${RESET}"
+        else
+            error_exit "OpenWrt 编译失败"
+        fi
+    fi
+
+    # Compile time
+    endtime=`date +'%Y-%m-%d %H:%M:%S'`
+    start_seconds=$(date --date="$starttime" +%s)
+    end_seconds=$(date --date="$endtime" +%s)
+    SEC=$((end_seconds-start_seconds))
+
+    echo -e "${BLUE_COLOR}├─ 检查编译结果...${RESET}"
+    if [ -f bin/targets/*/*/sha256sums ]; then
+        echo -e "${GREEN_COLOR}│   ✓ Build success! ${RESET}"
+    else
+        echo -e "${RED_COLOR}│   ✗ Build error... ${RESET}"
+        echo -e "${BLUE_COLOR}└─ 编译耗时: $(( SEC / 3600 ))h,$(( (SEC % 3600) / 60 ))m,$(( (SEC % 3600) % 60 ))s${RESET}"
+        exit 1
+    fi
+
+    echo -e "${BLUE_COLOR}└─ 编译耗时: $(( SEC / 3600 ))h,$(( (SEC % 3600) / 60 ))m,$(( (SEC % 3600) % 60 ))s${RESET}"
 }
 
 # =============================================================================
@@ -313,13 +465,13 @@ main() {
     
     # 执行编译脚本
     compilation_script "$architecture"
-    
-    # 计算构建时间
-    local end_time=$(date +%s)
-    local duration=$((end_time - START_TIME))
-    print_success "构建完成！总耗时: $((duration / 60)) 分 $((duration % 60)) 秒"
-}
 
+    # 缓存工具链
+    cache_toolchain "$toolchain_arch"
+
+    # 生成 Config 文件
+    generate_config_file
+    
 # 脚本入口点
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     # 如果没有提供足够的参数，显示使用帮助
