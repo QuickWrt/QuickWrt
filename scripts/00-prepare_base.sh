@@ -82,16 +82,29 @@ fi
 
 sed -i 's/OpenWrt/ZeroWrt/' package/base-files/files/bin/config_generate
 
-cp -rf ../OpenBox/doc/base-files/etc/banner > package/base-files/files/etc/banner
+cp -rf ../OpenBox/doc/base-files/etc/banner ./package/base-files/files/etc/banner
 
 # luci-mod extra
 pushd feeds/luci
 cat ../OpenBox/firewall4/luci-24.10/*.patch | patch -p1
+patch -p1 <../OpenBox/firewall4/luci-24.10/0001-luci-app-firewall-add-nft-fullcone-and-bcm-fullcone-.patch
+patch -p1 <../OpenBox/firewall4/luci-24.10/0002-luci-app-firewall-add-shortcut-fe-option.patch
+patch -p1 <../OpenBox/firewall4/luci-24.10/0003-luci-app-firewall-add-ipv6-nat-option.patch
+patch -p1 <../OpenBox/firewall4/luci-24.10/0004-luci-add-firewall-add-custom-nft-rule-support.patch
+patch -p1 <../OpenBox/firewall4/luci-24.10/0005-luci-app-firewall-add-natflow-offload-support.patch
+patch -p1 <../OpenBox/firewall4/luci-24.10/0006-luci-app-firewall-enable-hardware-offload-only-on-de.patch
+patch -p1 <../OpenBox/firewall4/luci-24.10/0007-luci-app-firewall-add-fullcone6-option-for-nftables-.patch
 popd
 
 # luci-mod extra
 pushd feeds/luci
-cat ../OpenBox/luci/*.patch | patch -p1
+patch -p1 <../OpenBox/luci/0001-luci-mod-system-add-modal-overlay-dialog-to-reboot.patch
+patch -p1 <../OpenBox/luci/0002-luci-mod-status-displays-actual-process-memory-usage.patch
+patch -p1 <../OpenBox/luci/0003-luci-mod-status-storage-index-applicable-only-to-val.patch
+patch -p1 <../OpenBox/luci/0004-luci-mod-status-firewall-disable-legacy-firewall-rul.patch
+patch -p1 <../OpenBox/luci/0005-luci-mod-system-add-refresh-interval-setting.patch
+patch -p1 <../OpenBox/luci/0006-luci-mod-system-mounts-add-docker-directory-mount-po.patch
+patch -p1 <../OpenBox/luci/0007-luci-mod-system-add-ucitrack-luci-mod-system-zram.js.patch
 popd
 
 # opkg
