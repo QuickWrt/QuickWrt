@@ -17,12 +17,13 @@ readonly RESET='\033[0m'
 # 全局常量定义
 # =============================================================================
 readonly SCRIPT_NAME="OpenWRT 构建系统"
-readonly SCRIPT_VERSION="1.0.0"
+readonly SCRIPT_VERSION="2.0.0"
 readonly AUTHOR="OPPEN321"
 readonly BLOG="www.kejizero.online"
 readonly MIRROR="https://raw.githubusercontent.com/BlueStack-Sky/QuickWrt/refs/heads/master"
 readonly SUPPORTED_ARCHITECTURES=("rockchip" "x86_64")
 readonly REQUIRED_USER="zhao"
+readonly BUILD_MODES=("accelerated" "normal" "toolchain-only")
 
 # =============================================================================
 # 全局变量
@@ -30,6 +31,8 @@ readonly REQUIRED_USER="zhao"
 GROUP_FLAG=false
 START_TIME=$(date +%s)
 CPU_CORES=$(( $(nproc --all) + 1 ))
+BUILD_MODE="normal"
+TOOLCHAIN_ARCH=""
 
 # =============================================================================
 # 函数定义
@@ -73,20 +76,26 @@ validate_environment() {
 # 显示使用帮助
 show_usage() {
     echo -e "\n${BOLD}使用方法:${RESET}"
-    echo -e "  bash $0 <version> <architecture>"
+    echo -e "  bash $0 <version> <architecture> [build_mode]"
     echo -e "\n${BOLD}支持的架构:${RESET}"
     for arch in "${SUPPORTED_ARCHITECTURES[@]}"; do
         echo -e "  • ${GREEN_COLOR}$arch${RESET}"
     done
+    echo -e "\n${BOLD}支持的编译模式:${RESET}"
+    echo -e "  • ${GREEN_COLOR}accelerated${RESET}   - 加速编译（下载预编译工具链）"
+    echo -e "  • ${GREEN_COLOR}normal${RESET}        - 普通编译（完整编译所有组件）"
+    echo -e "  • ${GREEN_COLOR}toolchain-only${RESET} - 仅编译工具链（用于缓存）"
     echo -e "\n${BOLD}示例:${RESET}"
-    echo -e "  bash $0 v24 x86_64"
-    echo -e "  bash $0 v24 rockchip"
+    echo -e "  bash $0 v24 x86_64 accelerated"
+    echo -e "  bash $0 v24 rockchip normal"
+    echo -e "  bash $0 v24 x86_64 toolchain-only"
 }
 
 # 验证参数
 validate_arguments() {
     local version="$1"
     local arch="$2"
+    local mode="${3:-normal}"
     
     if [[ -z "$version" ]]; then
         error_exit "未指定版本号"
@@ -96,6 +105,7 @@ validate_arguments() {
         error_exit "未指定目标架构"
     fi
     
+    # 验证架构
     local valid_arch=false
     for supported_arch in "${SUPPORTED_ARCHITECTURES[@]}"; do
         if [[ "$arch" == "$supported_arch" ]]; then
@@ -106,6 +116,20 @@ validate_arguments() {
     
     if [[ "$valid_arch" == false ]]; then
         error_exit "不支持的架构: '$arch'"
+    fi
+    
+    # 验证编译模式
+    local valid_mode=false
+    for supported_mode in "${BUILD_MODES[@]}"; do
+        if [[ "$mode" == "$supported_mode" ]]; then
+            valid_mode=true
+            BUILD_MODE="$mode"
+            break
+        fi
+    done
+    
+    if [[ "$valid_mode" == false ]]; then
+        error_exit "不支持的编译模式: '$mode'"
     fi
 }
 
@@ -124,6 +148,7 @@ show_banner() {
     echo -e "${BOLD}${BLUE_COLOR}║${RESET}  🔧 ${GREEN_COLOR}构建开始:${RESET} $(date '+%Y-%m-%d %H:%M:%S')                                ${BOLD}${BLUE_COLOR}║${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}║${RESET}  ⚡ ${GREEN_COLOR}处理器核心:${RESET} $CPU_CORES 个                                           ${BOLD}${BLUE_COLOR}║${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}║${RESET}  🐧 ${GREEN_COLOR}系统用户:${RESET} $(whoami)                                               ${BOLD}${BLUE_COLOR}║${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}║${RESET}  🚀 ${GREEN_COLOR}编译模式:${RESET} $BUILD_MODE                                     ${BOLD}${BLUE_COLOR}║${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}╚══════════════════════════════════════════════════════════════════╝${RESET}"
     echo -e ""
 }
@@ -147,8 +172,26 @@ setup_curl_progress() {
     export CURL_OPTIONS
 }
 
-# 编译脚本
-compilation_script() {
+# 设置工具链架构
+setup_toolchain_arch() {
+    local arch="$1"
+    case "$arch" in
+        "x86_64")
+            TOOLCHAIN_ARCH="x86_64"
+            ;;
+        "rockchip")
+            TOOLCHAIN_ARCH="aarch64"
+            ;;
+        *)
+            error_exit "未知架构: $arch"
+            ;;
+    esac
+    export TOOLCHAIN_ARCH
+    print_success "工具链架构设置为: $TOOLCHAIN_ARCH"
+}
+
+# 编译脚本 - 准备源代码
+prepare_source_code() {
     print_info "开始查询最新 OpenWRT 版本..."
     tag_version="$(curl -s https://github.com/openwrt/openwrt/tags | grep -Eo "v[0-9\.]+\-*r*c*[0-9]*.tar.gz" | sed -n '/[2-9][4-9]/p' | sed -n 1p | sed 's/v//g' | sed 's/.tar.gz//g')"
     export tag_version="$tag_version"
@@ -177,23 +220,20 @@ compilation_script() {
 
     print_info "正在复制密钥文件..."
     if [ -d "openwrt" ]; then
-        cd openwrt || { printf "%b\n" "${RED_COLOR}进入 openwrt 目录失败${RES}"; exit 1; }
-
+        cd openwrt || error_exit "进入 openwrt 目录失败"
+        
         if cp -rf ../OpenBox/key.tar.gz ./key.tar.gz; then
             if tar zxf key.tar.gz; then
                 rm -f key.tar.gz
                 print_info "密钥已复制并解压完成"
             else
-                printf "%b\n" "${RED_COLOR}解压 key.tar.gz 失败${RES}"
-                exit 1
+                error_exit "解压 key.tar.gz 失败"
             fi
         else
-            printf "%b\n" "${RED_COLOR}复制 key.tar.gz 失败${RES}"
-            exit 1
+            error_exit "复制 key.tar.gz 失败"
         fi
     else
-        printf "%b\n" "${RED_COLOR}未找到 openwrt 源码目录，下载源码失败${RES}"
-        exit 1
+        error_exit "未找到 openwrt 源码目录，下载源码失败"
     fi
 
     print_info "正在更新软件源 feeds..."
@@ -211,6 +251,11 @@ compilation_script() {
     else
         error_exit "feeds 安装失败"
     fi
+}
+
+# 执行构建脚本
+execute_build_scripts() {
+    local arch="$1"
     
     print_info "下载并执行构建脚本..."
     local scripts=(
@@ -255,19 +300,17 @@ compilation_script() {
 
     # 执行架构特定脚本
     echo -e "${BLUE_COLOR}├─ 执行架构特定配置...${RESET}"
-    if [[ "$1" == "rockchip" ]]; then
+    if [[ "$arch" == "rockchip" ]]; then
         echo -e "${BLUE_COLOR}│   ├─ 配置 Rockchip 架构${RESET}"
         if bash 02-rockchip_target_only.sh > /dev/null 2>&1; then
-            export core=arm64
             echo -e "${GREEN_COLOR}│   │   ✓ Rockchip 架构配置完成${RESET}"
             print_success "Rockchip 架构配置完成"
         else
             error_exit "Rockchip 架构配置脚本执行失败"
         fi
-    elif [[ "$1" == "x86_64" ]]; then
+    elif [[ "$arch" == "x86_64" ]]; then
         echo -e "${BLUE_COLOR}│   ├─ 配置 x86_64 架构${RESET}"
         if bash 02-x86_64_target_only.sh > /dev/null 2>&1; then
-            export core=amd64
             echo -e "${GREEN_COLOR}│   │   ✓ x86_64 架构配置完成${RESET}"
             print_success "x86_64 架构配置完成"
         else
@@ -284,10 +327,14 @@ compilation_script() {
     fi
 
     print_success "构建环境准备完成"
+}
 
-    # 加载配置文件
+# 加载配置文件
+load_configuration() {
+    local arch="$1"
+    
     print_info "加载配置文件..."
-    if [[ "$1" == "rockchip" ]]; then
+    if [[ "$arch" == "rockchip" ]]; then
         echo -e "${BLUE_COLOR}├─ 选择 Rockchip 架构配置${RESET}"
         if cp -rf ../OpenBox/Config/Rockchip.config ./.config; then
             echo -e "${GREEN_COLOR}└─ ✓ Rockchip 配置文件加载完成${RESET}"
@@ -295,7 +342,7 @@ compilation_script() {
         else
             error_exit "Rockchip 配置文件加载失败"
         fi
-    elif [[ "$1" == "x86_64" ]]; then
+    elif [[ "$arch" == "x86_64" ]]; then
         echo -e "${BLUE_COLOR}├─ 选择 x86_64 架构配置${RESET}"
         if cp -rf ../OpenBox/Config/X86_64.config ./.config; then
             echo -e "${GREEN_COLOR}└─ ✓ x86_64 配置文件加载完成${RESET}"
@@ -304,61 +351,6 @@ compilation_script() {
             error_exit "x86_64 配置文件加载失败"
         fi
     fi
-}
-
-# 缓存工具链
-cache_toolchain() {
-    print_info "下载工具链..."
-    echo -e "${BLUE_COLOR}├─ 检测系统信息...${RESET}"
-    
-    # 检测系统信息
-    if [[ -f /etc/os-release ]]; then
-        source /etc/os-release
-        echo -e "${GREEN_COLOR}│   ✓ 检测到系统: $PRETTY_NAME${RESET}"
-    else
-        echo -e "${YELLOW_COLOR}│   ⚠ 无法检测系统信息${RESET}"
-    fi
-    
-    echo -e "${BLUE_COLOR}├─ 下载工具链文件...${RESET}"
-    local TOOLCHAIN_URL="https://github.com/BlueStack-Sky/QuickWrt/releases/download/openwrt-24.10"
-    local toolchain_file="toolchain_musl_${toolchain_arch}_gcc-13.tar.zst"
-    
-    if curl -L ${TOOLCHAIN_URL}/${toolchain_file} -o toolchain.tar.zst ${CURL_OPTIONS}; then
-        echo -e "${GREEN_COLOR}│   ✓ 工具链下载完成${RESET}"
-    else
-        error_exit "工具链下载失败"
-    fi
-    
-    echo -e "${BLUE_COLOR}├─ 解压工具链...${RESET}"
-    if tar -I "zstd" -xf toolchain.tar.zst; then
-        echo -e "${GREEN_COLOR}│   ✓ 工具链解压完成${RESET}"
-    else
-        error_exit "工具链解压失败"
-    fi
-    
-    echo -e "${BLUE_COLOR}├─ 清理临时文件...${RESET}"
-    if rm -f toolchain.tar.zst; then
-        echo -e "${GREEN_COLOR}│   ✓ 临时文件清理完成${RESET}"
-    else
-        print_warning "清理临时文件时出现警告"
-    fi
-    
-    echo -e "${BLUE_COLOR}├─ 创建目录结构...${RESET}"
-    if mkdir -p bin; then
-        echo -e "${GREEN_COLOR}│   ✓ 目录创建完成${RESET}"
-    else
-        error_exit "创建目录失败"
-    fi
-    
-    echo -e "${BLUE_COLOR}├─ 更新文件时间戳...${RESET}"
-    if find ./staging_dir/ -name '*' -exec touch {} \; >/dev/null 2>&1 && \
-       find ./tmp/ -name '*' -exec touch {} \; >/dev/null 2>&1; then
-        echo -e "${GREEN_COLOR}└─ ✓ 文件时间戳更新完成${RESET}"
-    else
-        print_warning "更新文件时间戳时出现警告"
-    fi
-    
-    print_success "工具链缓存完成"
 }
 
 # 生成 Config 文件
@@ -386,45 +378,116 @@ generate_config_file() {
     print_success "Config 文件生成完成"
 }
 
-# 开始编译
-compile_openwrt() {
-    starttime=`date +'%Y-%m-%d %H:%M:%S'`
-
-    if [ "$BUILD_TOOLCHAIN" = "y" ]; then
-        print_info "缓存工具链..."
-        echo -e "${BLUE_COLOR}├─ 编译工具链...${RESET}"
-        if make -j"$cores" toolchain/compile || make -j"$cores" toolchain/compile V=s; then
-            echo -e "${GREEN_COLOR}│   ✓ 工具链编译完成${RESET}"
+# 下载预编译工具链（加速模式）
+download_prebuilt_toolchain() {
+    print_info "下载预编译工具链（加速模式）..."
+    
+    echo -e "${BLUE_COLOR}├─ 检测系统信息...${RESET}"
+    if [[ -f /etc/os-release ]]; then
+        source /etc/os-release
+        echo -e "${GREEN_COLOR}│   ✓ 检测到系统: $PRETTY_NAME${RESET}"
+    else
+        echo -e "${YELLOW_COLOR}│   ⚠ 无法检测系统信息${RESET}"
+    fi
+    
+    echo -e "${BLUE_COLOR}├─ 下载工具链文件...${RESET}"
+    local TOOLCHAIN_URL="https://github.com/BlueStack-Sky/QuickWrt/releases/download/openwrt-24.10"
+    local toolchain_file="toolchain_musl_${TOOLCHAIN_ARCH}_gcc-13.tar.zst"
+    
+    if curl -L "${TOOLCHAIN_URL}/${toolchain_file}" -o toolchain.tar.zst ${CURL_OPTIONS}; then
+        echo -e "${GREEN_COLOR}│   ✓ 工具链下载完成${RESET}"
+    else
+        error_exit "工具链下载失败"
+    fi
+    
+    echo -e "${BLUE_COLOR}├─ 解压工具链...${RESET}"
+    if command -v zstd >/dev/null 2>&1; then
+        if tar -I "zstd" -xf toolchain.tar.zst; then
+            echo -e "${GREEN_COLOR}│   ✓ 工具链解压完成${RESET}"
         else
-            error_exit "工具链编译失败"
+            error_exit "工具链解压失败"
         fi
+    else
+        error_exit "未找到 zstd 命令，请先安装 zstd"
+    fi
+    
+    echo -e "${BLUE_COLOR}├─ 清理临时文件...${RESET}"
+    if rm -f toolchain.tar.zst; then
+        echo -e "${GREEN_COLOR}│   ✓ 临时文件清理完成${RESET}"
+    else
+        print_warning "清理临时文件时出现警告"
+    fi
+    
+    echo -e "${BLUE_COLOR}├─ 创建目录结构...${RESET}"
+    if mkdir -p bin; then
+        echo -e "${GREEN_COLOR}│   ✓ 目录创建完成${RESET}"
+    else
+        error_exit "创建目录失败"
+    fi
+    
+    echo -e "${BLUE_COLOR}├─ 更新文件时间戳...${RESET}"
+    if find ./staging_dir/ -name '*' -exec touch {} \; >/dev/null 2>&1 && \
+       find ./tmp/ -name '*' -exec touch {} \; >/dev/null 2>&1; then
+        echo -e "${GREEN_COLOR}└─ ✓ 文件时间戳更新完成${RESET}"
+    else
+        print_warning "更新文件时间戳时出现警告"
+    fi
+    
+    print_success "预编译工具链准备完成"
+}
 
+# 编译工具链（普通模式或工具链模式）
+compile_toolchain() {
+    print_info "开始编译工具链..."
+    local starttime=$(date +'%Y-%m-%d %H:%M:%S')
+    
+    echo -e "${BLUE_COLOR}├─ 编译工具链...${RESET}"
+    if make -j"$CPU_CORES" toolchain/compile || make -j"$CPU_CORES" toolchain/compile V=s; then
+        echo -e "${GREEN_COLOR}│   ✓ 工具链编译完成${RESET}"
+    else
+        error_exit "工具链编译失败"
+    fi
+    
+    # 如果是工具链模式，打包并退出
+    if [[ "$BUILD_MODE" == "toolchain-only" ]]; then
         echo -e "${BLUE_COLOR}├─ 打包工具链缓存...${RESET}"
         if mkdir -p toolchain-cache && \
-           tar -I "zstd -19 -T$(nproc --all)" -cf "toolchain-cache/toolchain_musl_${toolchain_arch}_gcc-13.tar.zst" \
+           tar -I "zstd -19 -T$(nproc --all)" -cf "toolchain-cache/toolchain_musl_${TOOLCHAIN_ARCH}_gcc-13.tar.zst" \
                 ./build_dir ./dl ./staging_dir ./tmp; then
             echo -e "${GREEN_COLOR}│   ✓ 工具链缓存完成${RESET}"
         else
             error_exit "工具链缓存打包失败"
         fi
-
-        echo -e "${GREEN_COLOR}└─ ✓ 工具链任务完成${RESET}"
+        
+        local endtime=$(date +'%Y-%m-%d %H:%M:%S')
+        local start_seconds=$(date --date="$starttime" +%s)
+        local end_seconds=$(date --date="$endtime" +%s)
+        local SEC=$((end_seconds-start_seconds))
+        
+        echo -e "${GREEN_COLOR}└─ ✓ 工具链任务完成，耗时: $(( SEC / 3600 ))h,$(( (SEC % 3600) / 60 ))m,$(( (SEC % 3600) % 60 ))s${RESET}"
         exit 0
+    fi
+    
+    print_success "工具链编译完成"
+}
+
+# 编译 OpenWRT
+compile_openwrt() {
+    print_info "开始编译 OpenWRT..."
+    local starttime=$(date +'%Y-%m-%d %H:%M:%S')
+    
+    echo -e "${BLUE_COLOR}├─ 执行 make 编译...${RESET}"
+    if make -j"$CPU_CORES" IGNORE_ERRORS="n m"; then
+        echo -e "${GREEN_COLOR}│   ✓ 编译过程完成${RESET}"
     else
-        print_info "开始编译 OpenWrt..."
-        echo -e "${BLUE_COLOR}├─ 执行 make 编译...${RESET}"
-        if make -j"$cores" IGNORE_ERRORS="n m"; then
-            echo -e "${GREEN_COLOR}│   ✓ 编译过程完成${RESET}"
-        else
-            error_exit "OpenWrt 编译失败"
-        fi
+        error_exit "OpenWrt 编译失败"
     fi
 
-    # Compile time
-    endtime=`date +'%Y-%m-%d %H:%M:%S'`
-    start_seconds=$(date --date="$starttime" +%s)
-    end_seconds=$(date --date="$endtime" +%s)
-    SEC=$((end_seconds-start_seconds))
+    # 计算编译时间
+    local endtime=$(date +'%Y-%m-%d %H:%M:%S')
+    local start_seconds=$(date --date="$starttime" +%s)
+    local end_seconds=$(date --date="$endtime" +%s)
+    local SEC=$((end_seconds-start_seconds))
 
     echo -e "${BLUE_COLOR}├─ 检查编译结果...${RESET}"
     if [ -f bin/targets/*/*/sha256sums ]; then
@@ -444,9 +507,13 @@ compile_openwrt() {
 main() {
     local version="${1:-}"
     local architecture="${2:-}"
+    local build_mode="${3:-normal}"
     
     # 参数验证
-    validate_arguments "$version" "$architecture"
+    validate_arguments "$version" "$architecture" "$build_mode"
+    
+    # 设置工具链架构
+    setup_toolchain_arch "$architecture"
     
     # 显示横幅
     show_banner
@@ -457,31 +524,47 @@ main() {
     # 环境设置
     setup_build_environment
     setup_curl_progress
-
-    # 根据架构设置工具链类型
-    case "$architecture" in
-        rockchip)
-            toolchain_arch="aarch64_generic"
-            ;;
-        x86_64)
-            toolchain_arch="x86_64"
-            ;;
-    esac
-    export toolchain_arch
     
-    print_success "初始化完成，开始构建 $architecture 架构的 $version 版本"
+    print_success "初始化完成，开始构建 $architecture 架构的 $version 版本，模式：$BUILD_MODE"
     
     # 记录开始时间
     START_TIME=$(date +%s)
     
-    # 执行编译脚本
-    compilation_script "$architecture"
-
-    # 缓存工具链
-    cache_toolchain "$toolchain_arch"
-
-    # 生成 Config 文件
+    # 步骤1: 准备源代码
+    prepare_source_code
+    
+    # 步骤2: 执行构建脚本
+    execute_build_scripts "$architecture"
+    
+    # 步骤3: 加载配置文件
+    load_configuration "$architecture"
+    
+    # 步骤4: 生成 Config 文件（必须在工具链之前）
     generate_config_file
+    
+    # 根据编译模式执行不同逻辑
+    case "$BUILD_MODE" in
+        "accelerated")
+            # 加速模式：下载预编译工具链
+            download_prebuilt_toolchain
+            # 然后直接编译 OpenWRT
+            compile_openwrt
+            ;;
+        "normal")
+            # 普通模式：完整编译工具链和 OpenWRT
+            compile_toolchain
+            compile_openwrt
+            ;;
+        "toolchain-only")
+            # 仅编译工具链模式
+            compile_toolchain
+            ;;
+    esac
+    
+    # 计算总耗时
+    local END_TIME=$(date +%s)
+    local TOTAL_SEC=$((END_TIME - START_TIME))
+    print_success "构建完成！总耗时: $((TOTAL_SEC / 3600))h,$(( (TOTAL_SEC % 3600) / 60 ))m,$((TOTAL_SEC % 60))s"
 }
 
 # 脚本入口点
