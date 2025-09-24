@@ -15,7 +15,6 @@ sed -i 's,-SNAPSHOT,,g' package/base-files/image-config.in
 sed -i '/CONFIG_BUILDBOT/d' include/feeds.mk
 sed -i 's/;)\s*\\/; \\/' include/feeds.mk
 
-
 ### FW4 ###
 cp -rf ../OpenBox/firewall4/Makefile ./package/network/config/firewall4/Makefile
 sed -i 's|$(PROJECT_GIT)/project|https://github.com/openwrt|g' package/network/config/firewall4/Makefile
@@ -33,7 +32,7 @@ cp -f ../OpenBox/firewall4/nftables/*.patch ./package/network/utils/nftables/pat
 
 # kernel patch
 cp -f ../OpenBox/kernel-6.6/btf/*.patch ./target/linux/generic/hack-6.6/
-cp -f ../OpenBox/kernel-6.6/arm64/*.patch ./target/linux/generic/hack-6.6/
+cp -f ../OpenBox/kernel-6.6/arm/*.patch ./target/linux/generic/hack-6.6/
 cp -f ../OpenBox/kernel-6.6/net/*.patch ./target/linux/generic/hack-6.6/
 
 # IPv6 NAT
