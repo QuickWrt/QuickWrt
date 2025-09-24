@@ -215,11 +215,8 @@ compilation_script() {
     local scripts=(
         00-prepare_base.sh
         01-prepare_package.sh
-        02-prepare_adguard_core.sh
-        03-preset_mihimo_core.sh
-        04-preset_homeproxy.sh
-        05-rockchip_target_only.sh
-        05-x86_64_target_only.sh
+        02-rockchip_target_only.sh
+        02-x86_64_target_only.sh
     )
 
     # 下载所有脚本
@@ -244,9 +241,6 @@ compilation_script() {
     local base_scripts=(
         "00-prepare_base.sh"
         "01-prepare_package.sh" 
-        "02-prepare_adguard_core.sh"
-        "03-preset_mihimo_core.sh"
-        "04-preset_homeproxy.sh"
     )
 
     for script in "${base_scripts[@]}"; do
@@ -262,7 +256,7 @@ compilation_script() {
     echo -e "${BLUE_COLOR}├─ 执行架构特定配置...${RESET}"
     if [[ "$1" == "rockchip" ]]; then
         echo -e "${BLUE_COLOR}│   ├─ 配置 Rockchip 架构${RESET}"
-        if bash 05-rockchip_target_only.sh > /dev/null 2>&1; then
+        if bash 02-rockchip_target_only.sh > /dev/null 2>&1; then
             export core=arm64
             echo -e "${GREEN_COLOR}│   │   ✓ Rockchip 架构配置完成${RESET}"
             print_success "Rockchip 架构配置完成"
@@ -271,7 +265,7 @@ compilation_script() {
         fi
     elif [[ "$1" == "x86_64" ]]; then
         echo -e "${BLUE_COLOR}│   ├─ 配置 x86_64 架构${RESET}"
-        if bash 05-x86_64_target_only.sh > /dev/null 2>&1; then
+        if bash 02-x86_64_target_only.sh > /dev/null 2>&1; then
             export core=amd64
             echo -e "${GREEN_COLOR}│   │   ✓ x86_64 架构配置完成${RESET}"
             print_success "x86_64 架构配置完成"
