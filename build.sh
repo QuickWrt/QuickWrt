@@ -30,7 +30,7 @@ readonly BUILD_MODES=("accelerated" "normal" "toolchain-only")
 # =============================================================================
 GROUP_FLAG=false
 START_TIME=$(date +%s)
-CPU_CORES=$(( $(nproc --all) + 1 ))
+CPU_CORES=$(nproc)
 BUILD_MODE="normal"
 TOOLCHAIN_ARCH=""
 
