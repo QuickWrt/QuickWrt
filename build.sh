@@ -148,7 +148,7 @@ show_banner() {
     echo -e "${BOLD}${BLUE_COLOR}║${RESET}  🔧 ${GREEN_COLOR}构建开始:${RESET} $(date '+%Y-%m-%d %H:%M:%S')                                ${BOLD}${BLUE_COLOR}║${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}║${RESET}  ⚡ ${GREEN_COLOR}处理器核心:${RESET} $CPU_CORES 个                                             ${BOLD}${BLUE_COLOR}║${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}║${RESET}  🐧 ${GREEN_COLOR}系统用户:${RESET} $(whoami)                                               ${BOLD}${BLUE_COLOR}║${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET}  🚀 ${GREEN_COLOR}编译模式:${RESET} $BUILD_MODE                                     ${BOLD}${BLUE_COLOR}║${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}║${RESET}  🚀 ${GREEN_COLOR}编译模式:${RESET} $BUILD_MODE                                         ${BOLD}${BLUE_COLOR}║${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}╚══════════════════════════════════════════════════════════════════╝${RESET}"
     echo -e ""
 }
