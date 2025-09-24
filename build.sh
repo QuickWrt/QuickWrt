@@ -457,6 +457,17 @@ main() {
     # 环境设置
     setup_build_environment
     setup_curl_progress
+
+    # 根据架构设置工具链类型
+    case "$architecture" in
+        rockchip)
+            toolchain_arch="aarch64_generic"
+            ;;
+        x86_64)
+            toolchain_arch="x86_64"
+            ;;
+    esac
+    export toolchain_arch
     
     print_success "初始化完成，开始构建 $architecture 架构的 $version 版本"
     
