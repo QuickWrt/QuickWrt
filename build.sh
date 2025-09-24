@@ -221,33 +221,73 @@ compilation_script() {
         05-rockchip_target_only.sh
         05-x86_64_target_only.sh
     )
-    
+
+    # 下载所有脚本
+    echo -e "${BLUE_COLOR}├─ 下载构建脚本...${RESET}"
     for script in "${scripts[@]}"; do
-        curl -sO "$MIRROR/scripts/$script"
+        if curl -sO "$MIRROR/scripts/$script"; then
+            echo -e "${GREEN_COLOR}│   ✓ 已下载: $script${RESET}"
+        else
+            error_exit "下载脚本 $script 失败"
+        fi
     done
-    
-    chmod 0755 ./*.sh
-    
-    # 执行基础准备脚本
-    bash 00-prepare_base.sh
-    bash 01-prepare_package.sh
-    bash 02-prepare_adguard_core.sh
-    bash 03-preset_mihimo_core.sh
-    bash 04-preset_homeproxy.sh
-    
-    # 执行架构特定脚本
-    if [[ "$1" == "rockchip" ]]; then
-        bash 05-rockchip_target_only.sh
-        export core=arm64
-        print_success "Rockchip 架构配置完成"
-    elif [[ "$1" == "x86_64" ]]; then
-        bash 05-x86_64_target_only.sh
-        export core=amd64
-        print_success "x86_64 架构配置完成"
+
+    echo -e "${BLUE_COLOR}├─ 设置脚本执行权限...${RESET}"
+    if chmod 0755 ./*.sh; then
+        echo -e "${GREEN_COLOR}│   ✓ 权限设置完成${RESET}"
+    else
+        error_exit "设置脚本权限失败"
     fi
-    
+
+    # 执行基础准备脚本
+    echo -e "${BLUE_COLOR}├─ 执行基础环境准备...${RESET}"
+    local base_scripts=(
+        "00-prepare_base.sh"
+        "01-prepare_package.sh" 
+        "02-prepare_adguard_core.sh"
+        "03-preset_mihimo_core.sh"
+        "04-preset_homeproxy.sh"
+    )
+
+    for script in "${base_scripts[@]}"; do
+        echo -e "${BLUE_COLOR}│   ├─ 执行: $script${RESET}"
+        if bash "$script" > /dev/null 2>&1; then
+            echo -e "${GREEN_COLOR}│   │   ✓ 完成${RESET}"
+        else
+            error_exit "脚本 $script 执行失败"
+        fi
+    done
+
+    # 执行架构特定脚本
+    echo -e "${BLUE_COLOR}├─ 执行架构特定配置...${RESET}"
+    if [[ "$1" == "rockchip" ]]; then
+        echo -e "${BLUE_COLOR}│   ├─ 配置 Rockchip 架构${RESET}"
+        if bash 05-rockchip_target_only.sh > /dev/null 2>&1; then
+            export core=arm64
+            echo -e "${GREEN_COLOR}│   │   ✓ Rockchip 架构配置完成${RESET}"
+            print_success "Rockchip 架构配置完成"
+        else
+            error_exit "Rockchip 架构配置脚本执行失败"
+        fi
+    elif [[ "$1" == "x86_64" ]]; then
+        echo -e "${BLUE_COLOR}│   ├─ 配置 x86_64 架构${RESET}"
+        if bash 05-x86_64_target_only.sh > /dev/null 2>&1; then
+            export core=amd64
+            echo -e "${GREEN_COLOR}│   │   ✓ x86_64 架构配置完成${RESET}"
+            print_success "x86_64 架构配置完成"
+        else
+            error_exit "x86_64 架构配置脚本执行失败"
+        fi
+    fi
+
     # 清理临时脚本文件
-    rm -f 0*-*.sh
+    echo -e "${BLUE_COLOR}├─ 清理临时文件...${RESET}"
+    if rm -f 0*-*.sh; then
+        echo -e "${GREEN_COLOR}└─ ✓ 临时文件清理完成${RESET}"
+    else
+        print_warning "清理临时文件时出现警告，但可继续执行"
+    fi
+
     print_success "构建环境准备完成"
 }
 
