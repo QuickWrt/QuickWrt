@@ -194,6 +194,22 @@ compilation_script() {
         printf "%b\n" "${RED_COLOR}未找到 openwrt 源码目录，下载源码失败${RES}"
         exit 1
     fi
+
+    print_info "正在更新软件源 feeds..."
+    echo -e "${BLUE_COLOR}├─ 更新软件包列表...${RESET}"
+    if ./scripts/feeds update -a > /dev/null 2>&1; then
+        echo -e "${GREEN_COLOR}├─ 软件包列表更新成功${RESET}"
+    else
+        error_exit "feeds 更新失败"
+    fi
+    
+    echo -e "${BLUE_COLOR}├─ 安装软件包依赖...${RESET}"
+    if ./scripts/feeds install -a > /dev/null 2>&1; then
+        echo -e "${GREEN_COLOR}└─ 软件包依赖安装完成${RESET}"
+        print_success "Feeds 更新和安装完成"
+    else
+        error_exit "feeds 安装失败"
+    fi
     
     print_info "下载并执行构建脚本..."
     local scripts=(
