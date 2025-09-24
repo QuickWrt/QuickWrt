@@ -151,6 +151,7 @@ setup_curl_progress() {
 compilation_script() {
     print_info "开始查询最新 OpenWRT 版本..."
     tag_version="$(curl -s https://github.com/openwrt/openwrt/tags | grep -Eo "v[0-9\.]+\-*r*c*[0-9]*.tar.gz" | sed -n '/[2-9][4-9]/p' | sed -n 1p | sed 's/v//g' | sed 's/.tar.gz//g')"
+    export tag_version="$tag_version"
     print_success "检测到最新版本: $tag_version"
 
     print_info "开始克隆源代码仓库..."
