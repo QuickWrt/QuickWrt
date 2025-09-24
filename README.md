@@ -2,7 +2,7 @@
 
 ![OpenWRT Version](https://img.shields.io/badge/OpenWRT-v24.10-blue.svg)
 ![License](https://img.shields.io/badge/License-GPLv3-green.svg)
-![Platform](https://img.shields.io/badge/Platform-Linux-x86_64-Rockchip-orange.svg)
+![Platform](https://img.shields.io/badge/Platform-Linux%20x86_64%20%7C%20Rockchip-orange)
 
 一个高度优化的 OpenWRT 自动化构建系统，支持快速编译和定制化固件生成。
 
