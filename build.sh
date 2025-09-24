@@ -216,7 +216,7 @@ prepare_source_code() {
     cp -rf immortalwrt/package/boot/arm-trusted-firmware-rockchip openwrt/package/boot/arm-trusted-firmware-rockchip
 
     print_info "正在克隆 OpenBox 仓库以支持后续编译"
-    git clone --depth=1 --quiet -b main https://github.com/BlueStack-Sky/OpenBox
+    git clone --depth=1 --quiet -b main https://github.com/QuickWrt/OpenBox
 
     print_info "正在复制密钥文件..."
     if [ -d "openwrt" ]; then
@@ -391,7 +391,7 @@ download_prebuilt_toolchain() {
     fi
     
     echo -e "${BLUE_COLOR}├─ 下载工具链文件...${RESET}"
-    local TOOLCHAIN_URL="https://github.com/BlueStack-Sky/QuickWrt/releases/download/openwrt-24.10"
+    local TOOLCHAIN_URL="https://github.com/QuickWrt/QuickWrt/releases/download/openwrt-24.10"
     local toolchain_file="toolchain_musl_${TOOLCHAIN_ARCH}_gcc-13.tar.zst"
     
     if curl -L "${TOOLCHAIN_URL}/${toolchain_file}" -o toolchain.tar.zst ${CURL_OPTIONS}; then
