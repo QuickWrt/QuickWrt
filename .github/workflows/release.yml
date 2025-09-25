@@ -20,7 +20,6 @@ jobs:
       - name: Get next version
         id: version
         run: |
-          # 获取已有最新 tag，没有则默认 v2.0
           latest_tag=$(git tag --list "v*" | sort -V | tail -n1)
           if [ -z "$latest_tag" ]; then
             next_tag="v2.0"
