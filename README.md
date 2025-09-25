@@ -61,16 +61,7 @@
 ### 方法二 （使用一键编译脚本）
    ```bash
    # 基本用法
-   bash build.sh <version> <architecture> [build_mode]
-
-   # 示例：构建 x86_64 架构的 v24 版本，使用加速模式
-   bash build.sh v24 x86_64 accelerated
-
-   # 示例：构建 Rockchip 架构的 v24 版本，使用普通模式
-   bash build.sh v24 rockchip normal
-
-   # 示例：仅编译工具链（用于缓存）
-   bash build.sh v24 x86_64 toolchain-only
+   bash <(curl -fsSL https://tinyurl.com/QuickWrt-install)
    ```
 
 ### 参数说明
