@@ -60,7 +60,7 @@
 
 ### 方法二 （使用一键编译脚本）
    ```bash
-   # 基本用法
+   # 一键编译脚本
    bash <(curl -fsSL https://tinyurl.com/QuickWrt-install)
    ```
 
