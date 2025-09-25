@@ -12,7 +12,7 @@ rm -rf feeds/packages/lang/node
 git clone https://github.com/sbwml/feeds_packages_lang_node-prebuilt feeds/packages/lang/node -b packages-24.10
 
 # default settings
-git clone https://github.com/BlueStack-Sky/default-settings package/new/default-settings -b openwrt-24.10
+git clone https://github.com/QuickWrt/default-settings package/new/default-settings -b openwrt-24.10
 
 # linkease
 git clone https://github.com/sbwml/package_new_istore package/new/linkease
@@ -196,4 +196,4 @@ rm -rf package/new/custom/luci-app-adguardhome
 git clone https://git.kejizero.online/zhao/luci-app-adguardhome package/new/luci-app-adguardhome 
 
 # argon
-git clone https://github.com/BlueStack-Sky/luci-theme-argon package/new/luci-theme-argon
+git clone https://github.com/QuickWrt/luci-theme-argon package/new/luci-theme-argon
