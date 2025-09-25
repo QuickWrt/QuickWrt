@@ -38,16 +38,13 @@
   swig texinfo uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev
   ```
 
-## 🚀 快速开始
+## 🚀 使用方法
 
-1. 克隆仓库
+### 方法一 （克隆本仓库执行编译脚本）
    ```bash
-   git clone https://github.com/BlueStack-Sky/QuickWrt.git
-   cd QuickWrt
-   ```
+   # 克隆本仓库并加入
+   git clone https://github.com/BlueStack-Sky/QuickWrt.git && cd QuickWrt
 
-2. 运行构建脚本
-   ```bash
    # 基本用法
    bash build.sh <version> <architecture> [build_mode]
 
@@ -61,7 +58,13 @@
    bash build.sh v24 x86_64 toolchain-only
    ```
 
-3. 参数说明
+### 方法二 （使用一键编译脚本）
+   ```bash
+   # 一键编译脚本
+   bash <(curl -fsSL https://tinyurl.com/QuickWrt-install)
+   ```
+
+### 参数说明
 
 | 参数          | 必选 | 说明           | 可选值               |
 | ------------- | ---- | -------------- | -------------------- |
