@@ -133,22 +133,33 @@ validate_arguments() {
     fi
 }
 
-# 显示横幅
 show_banner() {
     clear
     echo -e ""
     echo -e "${BOLD}${BLUE_COLOR}╔══════════════════════════════════════════════════════════════════╗${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}║${RESET}                       OpenWRT 自动化构建系统                     ${BOLD}${BLUE_COLOR}║${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}╠══════════════════════════════════════════════════════════════════╣${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET}  🛠️   ${BOLD}开发者:${RESET} $AUTHOR                                            ${BOLD}${BLUE_COLOR}║${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET}  🌐   ${BOLD}博客:${RESET} $BLOG                                  ${BOLD}${BLUE_COLOR}║${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET}  💡   ${BOLD}理念:${RESET} 开源 · 定制化 · 高性能                               ${BOLD}${BLUE_COLOR}║${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET}  📦   ${BOLD}版本:${RESET} $SCRIPT_VERSION                                                ${BOLD}${BLUE_COLOR}║${RESET}"
+    
+    printf "${BOLD}${BLUE_COLOR}║${RESET} %-8s %-50s ${BOLD}${BLUE_COLOR}   ║${RESET}\n" "🛠️  开发者:" "OPPEN321"
+    printf "${BOLD}${BLUE_COLOR}║${RESET} %-8s %-50s ${BOLD}${BLUE_COLOR}     ║${RESET}\n" "🌐 博客:" "www.kejizero.online"
+    printf "${BOLD}${BLUE_COLOR}║${RESET} %-8s %-50s ${BOLD}${BLUE_COLOR}               ║${RESET}\n" "💡 理念:" "开源 · 定制化 · 高性能"
+    printf "${BOLD}${BLUE_COLOR}║${RESET} %-8s %-50s ${BOLD}${BLUE_COLOR}     ║${RESET}\n" "📦 版本:" "2.0.0"
+    
     echo -e "${BOLD}${BLUE_COLOR}╠══════════════════════════════════════════════════════════════════╣${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET}  🔧 ${GREEN_COLOR}构建开始:${RESET} $(date '+%Y-%m-%d %H:%M:%S')                                ${BOLD}${BLUE_COLOR}║${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET}  ⚡ ${GREEN_COLOR}处理器核心:${RESET} $CPU_CORES 个                                             ${BOLD}${BLUE_COLOR}║${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET}  🐧 ${GREEN_COLOR}系统用户:${RESET} $(whoami)                                               ${BOLD}${BLUE_COLOR}║${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET}  🚀 ${GREEN_COLOR}编译模式:${RESET} $BUILD_MODE                                         ${BOLD}${BLUE_COLOR}║${RESET}"
+    
+    printf "${BOLD}${BLUE_COLOR}║${RESET} %-8s %-50s ${BOLD}${BLUE_COLOR} ║${RESET}\n" "🔧 构建开始:" "$(date '+%Y-%m-%d %H:%M:%S')"
+    printf "${BOLD}${BLUE_COLOR}║${RESET} %-8s %-50s ${BOLD}${BLUE_COLOR}║${RESET}\n" "⚡ 处理器核心:" "$CPU_CORES 个"
+    printf "${BOLD}${BLUE_COLOR}║${RESET} %-8s %-50s ${BOLD}${BLUE_COLOR} ║${RESET}\n" "🐧 系统用户:" "$(whoami)"
+    
+    local mode_display
+    case "$BUILD_MODE" in
+        "accelerated") mode_display="加速编译" ;;
+        "normal") mode_display="普通编译" ;;
+        "toolchain-only") mode_display="仅工具链" ;;
+        *) mode_display="$BUILD_MODE" ;;
+    esac
+    printf "${BOLD}${BLUE_COLOR}║${RESET} %-8s %-50s ${BOLD}${BLUE_COLOR}     ║${RESET}\n" "🚀 编译模式:" "$mode_display"
+    
     echo -e "${BOLD}${BLUE_COLOR}╚══════════════════════════════════════════════════════════════════╝${RESET}"
     echo -e ""
 }
@@ -369,7 +380,7 @@ generate_config_file() {
     fi
 
     echo -e "${BLUE_COLOR}├─ 执行 make defconfig...${RESET}"
-    if make defconfig; then
+    if make defconfig > /dev/null 2>&1; then
         echo -e "${GREEN_COLOR}└─ ✓ Config 文件生成完成${RESET}"
     else
         error_exit "执行 make defconfig 失败"
