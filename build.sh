@@ -20,7 +20,7 @@ readonly SCRIPT_NAME="OpenWRT 构建系统"
 readonly SCRIPT_VERSION="2.0.0"
 readonly AUTHOR="OPPEN321"
 readonly BLOG="www.kejizero.online"
-readonly MIRROR="https://raw.githubusercontent.com/BlueStack-Sky/QuickWrt/refs/heads/master"
+readonly MIRROR="https://raw.githubusercontent.com/QuickWrt/QuickWrt/refs/heads/master"
 readonly SUPPORTED_ARCHITECTURES=("rockchip" "x86_64")
 readonly REQUIRED_USER="zhao"
 readonly BUILD_MODES=("accelerated" "normal" "toolchain-only")
@@ -64,13 +64,6 @@ print_success() {
 # 打印信息消息
 print_info() {
     print_color "$BLUE_COLOR" "ℹ️  信息: $1"
-}
-
-# 验证必需的环境变量
-validate_environment() {
-    if [[ "$(whoami)" != "$REQUIRED_USER" ]] && [[ -z "${git_name:-}" || -z "${git_password:-}" ]]; then
-        error_exit "未授权访问。请设置认证信息后再执行此脚本。"
-    fi
 }
 
 # 显示使用帮助
@@ -528,9 +521,6 @@ main() {
     
     # 显示横幅
     show_banner
-    
-    # 环境验证
-    validate_environment
     
     # 环境设置
     setup_build_environment
