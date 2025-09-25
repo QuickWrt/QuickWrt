@@ -42,7 +42,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.next_tag }}
-          name: Release ${{ env.next_tag }}
+          name: ${{ env.next_tag }}
           files: QuickWrt.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
