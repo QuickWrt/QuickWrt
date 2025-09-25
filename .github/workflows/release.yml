@@ -36,7 +36,7 @@ jobs:
 
       - name: Create archive
         run: |
-          tar -czf QuickWrt.tar.gz --exclude=.git .
+          git archive --format=tar.gz -o QuickWrt.tar.gz HEAD
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
