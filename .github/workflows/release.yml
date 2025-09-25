@@ -1,0 +1,48 @@
+name: Release QuickWrt
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  release:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Git
+        run: |
+          git fetch --tags
+
+      - name: Get next version
+        id: version
+        run: |
+          # 获取已有最新 tag，没有则默认 v2.0
+          latest_tag=$(git tag --list "v*" | sort -V | tail -n1)
+          if [ -z "$latest_tag" ]; then
+            next_tag="v2.0"
+          else
+            base=${latest_tag#v}
+            major=$(echo $base | cut -d. -f1)
+            minor=$(echo $base | cut -d. -f2)
+            next_minor=$((minor+1))
+            next_tag="v${major}.${next_minor}"
+          fi
+          echo "next_tag=$next_tag" >> $GITHUB_ENV
+          echo "Next version: $next_tag"
+
+      - name: Create archive
+        run: |
+          tar -czf QuickWrt.tar.gz --exclude=.git .
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.next_tag }}
+          name: Release ${{ env.next_tag }}
+          files: QuickWrt.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
