@@ -103,20 +103,25 @@ main() {
     curl -L -o "${ASSET}" "${URL}" || err "下载失败"
 
     log "解压文件..."
-    rm -rf quickwrt-build
-    mkdir quickwrt-build
-    tar -xzf "${ASSET}" -C quickwrt-build || err "解压失败"
+    rm -rf QuickWrt
+    mkdir QuickWrt
+    tar -xzf "${ASSET}" -C QuickWrt || err "解压失败"
 
-    # 处理顶层目录问题
-    top_dirs=($(find quickwrt-build -mindepth 1 -maxdepth 1 -type d))
-    if [ "${#top_dirs[@]}" -eq 1 ]; then
-        mv "${top_dirs[0]}"/* quickwrt-build/
-        rm -rf "${top_dirs[0]}"
+    # 进入构建目录
+    cd QuickWrt || err "进入 QuickWrt 失败"
+    
+    # 如果解压后有一个顶层目录，则进入该目录
+    if [ $(ls -1 | wc -l) -eq 1 ] && [ -d "$(ls -1)" ]; then
+        log "检测到顶层目录，进入: $(ls -1)"
+        cd "$(ls -1)" || err "进入解压目录失败"
     fi
-
-    cd quickwrt-build || err "进入 quickwrt-build 失败"
+    
+    # 检查必要文件
     [ -f "./build.sh" ] || err "未找到构建脚本: build.sh"
+    [ -d "./scripts" ] || err "未找到 scripts 目录"
+    
     chmod +x ./build.sh
+    chmod +x ./scripts/*.sh 2>/dev/null || log "为 scripts 目录下的脚本设置执行权限"
 
     # 交互模式选择
     interactive_mode
