@@ -42,8 +42,9 @@
 
 ### 方法一 （克隆本仓库执行编译脚本）
    ```bash
-   git clone https://github.com/BlueStack-Sky/QuickWrt.git
-   cd QuickWrt
+   # 克隆本仓库并加入
+   git clone https://github.com/BlueStack-Sky/QuickWrt.git && cd QuickWrt
+
    # 基本用法
    bash build.sh <version> <architecture> [build_mode]
 
