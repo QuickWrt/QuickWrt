@@ -38,15 +38,26 @@
   swig texinfo uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev
   ```
 
-## 🚀 快速开始
+## 🚀 使用方法
 
-1. 克隆仓库
+### 方法一 （克隆本仓库执行编译脚本）
    ```bash
    git clone https://github.com/BlueStack-Sky/QuickWrt.git
    cd QuickWrt
+   # 基本用法
+   bash build.sh <version> <architecture> [build_mode]
+
+   # 示例：构建 x86_64 架构的 v24 版本，使用加速模式
+   bash build.sh v24 x86_64 accelerated
+
+   # 示例：构建 Rockchip 架构的 v24 版本，使用普通模式
+   bash build.sh v24 rockchip normal
+
+   # 示例：仅编译工具链（用于缓存）
+   bash build.sh v24 x86_64 toolchain-only
    ```
 
-2. 运行构建脚本
+### 方法二 （使用一键编译脚本）
    ```bash
    # 基本用法
    bash build.sh <version> <architecture> [build_mode]
@@ -61,7 +72,7 @@
    bash build.sh v24 x86_64 toolchain-only
    ```
 
-3. 参数说明
+### 参数说明
 
 | 参数          | 必选 | 说明           | 可选值               |
 | ------------- | ---- | -------------- | -------------------- |
