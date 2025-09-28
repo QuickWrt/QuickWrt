@@ -210,7 +210,6 @@ prepare_source_code() {
     find openwrt/package/* -maxdepth 0 ! -name 'firmware' ! -name 'kernel' ! -name 'base-files' ! -name 'Makefile' -exec rm -rf {} +
     rm -rf ./openwrt_snap/package/firmware ./openwrt_snap/package/kernel ./openwrt_snap/package/base-files ./openwrt_snap/package/Makefile
     cp -rf ./openwrt_snap/package/* ./openwrt/package/
-    cp -rf ./openwrt_snap/feeds.conf.default ./openwrt/feeds.conf.default
 
     print_info "为 Rockchip 架构替换 ImmortalWRT 组件以增强设备兼容性..."
     rm -rf openwrt/package/boot/{rkbin,uboot-rockchip,arm-trusted-firmware-rockchip}
@@ -221,7 +220,8 @@ prepare_source_code() {
 
     print_info "正在克隆 OpenBox 仓库以支持后续编译"
     git clone --depth=1 --quiet -b main https://github.com/QuickWrt/OpenBox
-
+    cp -rf ./OpenBox/doc/feeds/feeds.conf.default ./openwrt/feeds.conf.default
+    
     print_info "正在复制密钥文件..."
     if [ -d "openwrt" ]; then
         cd openwrt || error_exit "进入 openwrt 目录失败"
