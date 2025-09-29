@@ -9,6 +9,9 @@ cp -rf ../OpenBox/kernel-6.6/kernel/0001-linux-module-video.patch ./package/0001
 git apply package/0001-linux-module-video.patch
 rm -rf package/0001-linux-module-video.patch
 
+# 修复 Rust 报错
+sed -i 's/ci-llvm=true/ci-llvm=false/g' feeds/packages/lang/rust/Makefile
+
 # 移除 SNAPSHOT 标签
 sed -i 's,-SNAPSHOT,,g' include/version.mk
 sed -i 's,-SNAPSHOT,,g' package/base-files/image-config.in
@@ -82,12 +85,6 @@ cp -rf ../OpenBox/kernel-6.6/btf/* ./target/linux/generic/hack-6.6/
 
 ### 个性化修改 ###
 sed -i "s/192.168.1.1/10.0.0.1/g" package/base-files/files/bin/config_generate
-
-if [ -n "$ROOT_PASSWORD" ]; then
-    # sha256 encryption
-    default_password=$(openssl passwd -5 password)
-    sed -i "s|^root:[^:]*:|root:${default_password}:|" package/base-files/files/etc/shadow
-fi
 
 sed -i 's/OpenWrt/ZeroWrt/' package/base-files/files/bin/config_generate
 
