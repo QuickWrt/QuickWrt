@@ -68,12 +68,12 @@ CONFIG_LRNG_SELFTEST=y
 ' >>./target/linux/generic/config-6.6
 
 # 6.17_ppp_performance
-wget https://github.com/torvalds/linux/commit/95d0d094.patch -O target/linux/generic/pending-6.6/999-1-95d0d09.patch
-wget https://github.com/torvalds/linux/commit/1a3e9b7a.patch -O target/linux/generic/pending-6.6/999-2-1a3e9b7.patch
-wget https://github.com/torvalds/linux/commit/7eebd219.patch -O target/linux/generic/pending-6.6/999-3-7eebd21.patch
+wget https://github.com/torvalds/linux/commit/95d0d094ba26432ec467e2260f4bf553053f1f8f.patch -O target/linux/generic/pending-6.6/999-1-95d0d09.patch
+wget https://github.com/torvalds/linux/commit/1a3e9b7a6b09e8ab3d2af019e4a392622685855e.patch -O target/linux/generic/pending-6.6/999-2-1a3e9b7.patch
+wget https://github.com/torvalds/linux/commit/7eebd219feda99df8292a97faff895a5da8159d6.patch -O target/linux/generic/pending-6.6/999-3-7eebd21.patch
 
 # ppp_fix
-wget -qO - https://github.com/immortalwrt/immortalwrt/commit/9d852a0.patch | patch -p1
+wget -qO - https://github.com/immortalwrt/immortalwrt/commit/9d852a05bd50b1c332301eecbcac1fa71be637d6.patch | patch -p1
 
 ### Other Kernel Hack 部分 ###
 # make olddefconfig
