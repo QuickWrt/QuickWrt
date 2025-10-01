@@ -184,7 +184,7 @@ setup_toolchain_arch() {
             TOOLCHAIN_ARCH="x86_64"
             ;;
         "rockchip")
-            TOOLCHAIN_ARCH="aarch64"
+            TOOLCHAIN_ARCH="aarch64_generic"
             ;;
         *)
             error_exit "未知架构: $arch"
