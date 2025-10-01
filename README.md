@@ -60,8 +60,11 @@
 
 ### 方法二 （使用一键编译脚本）
    ```bash
-   # 一键编译脚本
+   # 主链接
    bash <(curl -fsSL https://tinyurl.com/QuickWrt-install)
+
+   # 备用链接
+   bash <(curl -fsSL https://is.gd/QuickWrt_install)
    ```
 
 ### 参数说明
