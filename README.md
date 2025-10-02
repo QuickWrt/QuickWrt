@@ -73,7 +73,7 @@
 | ------------- | ---- | -------------- | -------------------- |
 | `version`     | ✅   | OpenWRT 版本   | v24 (当前支持)       |
 | `architecture`| ✅   | 目标架构       | x86_64, rockchip     |
-| `build_mode`  | ❌   | 编译模式       | accelerated, normal, toolchain-only |
+| `build_mode`  | ✅   | 编译模式       | accelerated, normal, toolchain-only |
 
 ### 编译模式说明
 
