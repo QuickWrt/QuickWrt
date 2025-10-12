@@ -1,50 +1,52 @@
 #!/bin/bash -e
 
-# autocore
-git clone https://github.com/sbwml/autocore-arm -b openwrt-24.10 package/system/autocore
+# remove
+rm -rf feeds/packages/net/{xray-core,v2ray-core,v2ray-geodata,sing-box,samba4,miniupnpd,aria2,nginx}
+rm -rf feeds/luci/applications/{luci-app-sqm,luci-app-upnp,luci-app-dockerman,luci-app-aria2,}
+rm -rf feeds/packages/utils/{unzip,docker,dockerd,containerd,runc,coremark}
+rm -rf feeds/packages/lang/{node,golang}
 
 # golang 1.25
-rm -rf feeds/packages/lang/golang
 git clone https://github.com/sbwml/packages_lang_golang -b 25.x feeds/packages/lang/golang
 
 # node - prebuilt
-rm -rf feeds/packages/lang/node
 git clone https://github.com/sbwml/feeds_packages_lang_node-prebuilt feeds/packages/lang/node -b packages-24.10
-
-# default settings
-git clone https://github.com/QuickWrt/default-settings package/new/default-settings -b openwrt-24.10
 
 # linkease
 git clone https://github.com/QuickWrt/openwrt_linkease package/new/openwrt_linkease
 
-# luci-app-quickfile
-git clone https://github.com/sbwml/luci-app-quickfile package/new/quickfile
+# quickwrt packages
+git clone https://github.com/QuickWrt/openwrt_packages package/new/openwrt_packages
 
-# luci-app-airplay2
-git clone https://github.com/sbwml/luci-app-airplay2 package/new/airplay2
+# SSRP & Passwall
+git clone https://github.com/QuickWrt/openwrt_helloworld package/new/openwrt_helloworld
 
-# luci-app-webdav
-git clone https://github.com/sbwml/luci-app-webdav package/new/luci-app-webdav
+# luci-app-sqm
+git clone https://git.kejizero.online/zhao/luci-app-sqm feeds/luci/applications/luci-app-sqm
+
+# unzip
+git clone https://github.com/sbwml/feeds_packages_utils_unzip feeds/packages/utils/unzip
+
+# UPnP
+git clone https://git.kejizero.online/zhao/miniupnpd feeds/packages/net/miniupnpd -b v2.3.9
+git clone https://git.kejizero.online/zhao/luci-app-upnp feeds/luci/applications/luci-app-upnp -b openwrt-24.10
+
+# Docker
+git clone https://git.kejizero.online/zhao/luci-app-dockerman -b openwrt-24.10 feeds/luci/applications/luci-app-dockerman
+git clone https://github.com/sbwml/packages_utils_docker feeds/packages/utils/docker
+git clone https://github.com/sbwml/packages_utils_dockerd feeds/packages/utils/dockerd
+git clone https://github.com/sbwml/packages_utils_containerd feeds/packages/utils/containerd
+git clone https://github.com/sbwml/packages_utils_runc feeds/packages/utils/runc
+
+# aria2 & ariaNG
+git clone https://github.com/sbwml/ariang-nginx package/new/ariang-nginx
+git clone https://github.com/sbwml/feeds_packages_net_aria2 -b 22.03 feeds/packages/net/aria2
 
 # ddns - fix boot
 sed -i '/boot()/,+2d' feeds/packages/net/ddns-scripts/files/etc/init.d/ddns
 
 # nlbwmon - disable syslog
 sed -i 's/stderr 1/stderr 0/g' feeds/packages/net/nlbwmon/files/nlbwmon.init
-
-# UPnP
-rm -rf feeds/{packages/net/miniupnpd,luci/applications/luci-app-upnp}
-git clone https://git.kejizero.online/zhao/miniupnpd feeds/packages/net/miniupnpd -b v2.3.9
-git clone https://git.kejizero.online/zhao/luci-app-upnp feeds/luci/applications/luci-app-upnp -b openwrt-24.10
-
-# Docker
-rm -rf feeds/luci/applications/luci-app-dockerman
-git clone https://git.kejizero.online/zhao/luci-app-dockerman -b openwrt-24.10 feeds/luci/applications/luci-app-dockerman
-rm -rf feeds/packages/utils/{docker,dockerd,containerd,runc}
-git clone https://github.com/sbwml/packages_utils_docker feeds/packages/utils/docker
-git clone https://github.com/sbwml/packages_utils_dockerd feeds/packages/utils/dockerd
-git clone https://github.com/sbwml/packages_utils_containerd feeds/packages/utils/containerd
-git clone https://github.com/sbwml/packages_utils_runc feeds/packages/utils/runc
 
 # Use nginx instead of uhttpd
 sed -i 's/+uhttpd /+luci-nginx /g' feeds/luci/collections/luci/Makefile
@@ -57,7 +59,6 @@ sed -i '/uhttpd-mod-ubus/d' feeds/luci/collections/luci-light/Makefile
 sed -i 's/+luci-nginx \\$/+luci-nginx/' feeds/luci/collections/luci-light/Makefile
 
 # nginx - latest version
-rm -rf feeds/packages/net/nginx
 git clone https://github.com/sbwml/feeds_packages_net_nginx feeds/packages/net/nginx -b openwrt-24.10
 sed -i 's/procd_set_param stdout 1/procd_set_param stdout 0/g;s/procd_set_param stderr 1/procd_set_param stderr 0/g' feeds/packages/net/nginx/files/nginx.init
 
@@ -108,7 +109,6 @@ patch -p1 <../../../OpenBox/luci/applications/luci-app-natmap/0001-luci-app-natm
 popd
 
 # samba4 - bump version
-rm -rf feeds/packages/net/samba4
 git clone https://github.com/sbwml/feeds_packages_net_samba4 feeds/packages/net/samba4
 # enable multi-channel
 sed -i '/workgroup/a \\n\t## enable multi-channel' feeds/packages/net/samba4/files/smb.conf.template
@@ -124,48 +124,12 @@ sed -i 's/0666/0644/g;s/0744/0755/g;s/0777/0755/g' feeds/luci/applications/luci-
 sed -i 's/0666/0644/g;s/0777/0755/g' feeds/packages/net/samba4/files/samba.config
 sed -i 's/0666/0644/g;s/0777/0755/g' feeds/packages/net/samba4/files/smb.conf.template
 
-# aria2 & ariaNG
-rm -rf feeds/packages/net/ariang
-rm -rf feeds/luci/applications/luci-app-aria2
-git clone https://github.com/sbwml/ariang-nginx package/new/ariang-nginx
-rm -rf feeds/packages/net/aria2
-git clone https://github.com/sbwml/feeds_packages_net_aria2 -b 22.03 feeds/packages/net/aria2
-
-# airconnect
-git clone https://github.com/sbwml/luci-app-airconnect package/new/airconnect --depth=1
-
-# netkit-ftp
-git clone https://github.com/sbwml/package_new_ftp package/new/ftp
-
-# SSRP & Passwall
-rm -rf feeds/packages/net/{xray-core,v2ray-core,v2ray-geodata,sing-box}
-git clone -b openwrt-24.10 https://github.com/QuickWrt/openwrt_helloworld package/new/helloworld
-
-# openlist
-git clone https://github.com/sbwml/luci-app-openlist2 package/new/openlist --depth=1
-
-# qBittorrent
-git clone https://github.com/sbwml/luci-app-qbittorrent package/new/qbittorrent --depth=1
-
-# unblockneteasemusic
-git clone https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic package/new/luci-app-unblockneteasemusic --depth=1
-sed -i 's/解除网易云音乐播放限制/网易云音乐解锁/g' package/new/luci-app-unblockneteasemusic/root/usr/share/luci/menu.d/luci-app-unblockneteasemusic.json
-
-# Mosdns
-git clone https://github.com/sbwml/luci-app-mosdns -b v5 package/new/mosdns --depth=1
-
-# OpenAppFilter
-git clone https://github.com/sbwml/OpenAppFilter --depth=1 package/new/OpenAppFilter -b v6
-
 # iperf3
 sed -i "s/D_GNU_SOURCE/D_GNU_SOURCE -funroll-loops/g" feeds/packages/net/iperf3/Makefile
 
 # nlbwmon
 sed -i 's/services/network/g' feeds/luci/applications/luci-app-nlbwmon/root/usr/share/luci/menu.d/luci-app-nlbwmon.json
 sed -i 's/services/network/g' feeds/luci/applications/luci-app-nlbwmon/htdocs/luci-static/resources/view/nlbw/config.js
-
-# mentohust
-git clone https://github.com/sbwml/luci-app-mentohust package/new/mentohust
 
 # luci-compat - fix translation
 sed -i 's/<%:Up%>/<%:Move up%>/g' feeds/luci/modules/luci-compat/luasrc/view/cbi/tblsection.htm
@@ -177,23 +141,10 @@ sed -i 's,frp 服务器,Frp 服务器,g' feeds/luci/applications/luci-app-frps/p
 sed -i 's,frp 客户端,Frp 客户端,g' feeds/luci/applications/luci-app-frpc/po/zh_Hans/frpc.po
 
 # luci-app-sqm
-rm -rf feeds/luci/applications/luci-app-sqm
 git clone https://git.kejizero.online/zhao/luci-app-sqm feeds/luci/applications/luci-app-sqm
 
 # unzip
-rm -rf feeds/packages/utils/unzip
 git clone https://github.com/sbwml/feeds_packages_utils_unzip feeds/packages/utils/unzip
 
 # lucky
 git clone https://github.com/gdy666/luci-app-lucky.git package/new/lucky
-
-# custom packages
-rm -rf feeds/packages/utils/coremark
-git clone https://github.com/sbwml/openwrt_pkgs package/new/custom --depth=1
-rm -rf package/new/custom/luci-app-adguardhome
-
-# adguardhome
-git clone https://git.kejizero.online/zhao/luci-app-adguardhome package/new/luci-app-adguardhome 
-
-# argon
-git clone https://github.com/QuickWrt/luci-theme-argon package/new/luci-theme-argon
