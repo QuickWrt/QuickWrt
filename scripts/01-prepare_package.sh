@@ -15,7 +15,7 @@ git clone https://github.com/sbwml/feeds_packages_lang_node-prebuilt feeds/packa
 git clone https://github.com/QuickWrt/default-settings package/new/default-settings -b openwrt-24.10
 
 # linkease
-git clone https://github.com/sbwml/package_new_istore package/new/linkease
+git clone https://github.com/QuickWrt/openwrt_linkease package/new/openwrt_linkease
 
 # luci-app-quickfile
 git clone https://github.com/sbwml/luci-app-quickfile package/new/quickfile
