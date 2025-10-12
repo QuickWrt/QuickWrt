@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-# remove
+# Replace package
 rm -rf feeds/packages/net/{xray-core,v2ray-core,v2ray-geodata,sing-box,samba4,miniupnpd,aria2,nginx}
 rm -rf feeds/luci/applications/{luci-app-sqm,luci-app-upnp,luci-app-dockerman,luci-app-aria2}
 rm -rf feeds/packages/utils/{unzip,docker,dockerd,containerd,runc,coremark}
