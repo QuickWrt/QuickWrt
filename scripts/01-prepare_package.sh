@@ -145,6 +145,3 @@ git clone https://git.kejizero.online/zhao/luci-app-sqm feeds/luci/applications/
 
 # unzip
 git clone https://github.com/sbwml/feeds_packages_utils_unzip feeds/packages/utils/unzip
-
-# lucky
-git clone https://github.com/gdy666/luci-app-lucky.git package/new/lucky
