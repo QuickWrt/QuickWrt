@@ -45,9 +45,6 @@ git clone https://github.com/sbwml/feeds_packages_net_aria2 -b 22.03 feeds/packa
 # ddns - fix boot
 sed -i '/boot()/,+2d' feeds/packages/net/ddns-scripts/files/etc/init.d/ddns
 
-# nlbwmon - disable syslog
-sed -i 's/stderr 1/stderr 0/g' feeds/packages/net/nlbwmon/files/nlbwmon.init
-
 # Use nginx instead of uhttpd
 sed -i 's/+uhttpd /+luci-nginx /g' feeds/luci/collections/luci/Makefile
 sed -i 's/+uhttpd-mod-ubus //' feeds/luci/collections/luci/Makefile
@@ -69,10 +66,6 @@ sed -i '/ubus_parallel_req/a\        ubus_script_timeout 300;' feeds/packages/ne
 # nginx - config
 cp -rf ../OpenBox/doc/nginx/luci.locations ./feeds/packages/net/nginx/files-luci-support/
 cp -rf ../OpenBox/doc/nginx/uci.conf.template ./feeds/packages/net/nginx-util/files/
-
-# opkg
-mkdir -p package/system/opkg/patches
-cp -rf ../OpenBox/opkg/* ./package/system/opkg/patches/
 
 # uwsgi - fix timeout
 sed -i '$a cgi-timeout = 600' feeds/packages/net/uwsgi/files-luci-support/luci-*.ini
@@ -126,10 +119,6 @@ sed -i 's/0666/0644/g;s/0777/0755/g' feeds/packages/net/samba4/files/smb.conf.te
 
 # iperf3
 sed -i "s/D_GNU_SOURCE/D_GNU_SOURCE -funroll-loops/g" feeds/packages/net/iperf3/Makefile
-
-# nlbwmon
-sed -i 's/services/network/g' feeds/luci/applications/luci-app-nlbwmon/root/usr/share/luci/menu.d/luci-app-nlbwmon.json
-sed -i 's/services/network/g' feeds/luci/applications/luci-app-nlbwmon/htdocs/luci-static/resources/view/nlbw/config.js
 
 # luci-compat - fix translation
 sed -i 's/<%:Up%>/<%:Move up%>/g' feeds/luci/modules/luci-compat/luasrc/view/cbi/tblsection.htm
