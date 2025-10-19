@@ -12,12 +12,6 @@ rm -rf package/0001-linux-module-video.patch
 # 修复 Rust 报错
 sed -i 's/ci-llvm=true/ci-llvm=false/g' feeds/packages/lang/rust/Makefile
 
-# 移除 SNAPSHOT 标签
-#sed -i 's,-SNAPSHOT,,g' include/version.mk
-#sed -i 's,-SNAPSHOT,,g' package/base-files/image-config.in
-#sed -i '/CONFIG_BUILDBOT/d' include/feeds.mk
-#sed -i 's/;)\s*\\/; \\/' include/feeds.mk
-
 ### FW4 ###
 cp -rf ../OpenBox/firewall4/Makefile ./package/network/config/firewall4/Makefile
 sed -i 's|$(PROJECT_GIT)/project|https://github.com/openwrt|g' package/network/config/firewall4/Makefile
