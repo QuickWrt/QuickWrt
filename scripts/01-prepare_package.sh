@@ -12,9 +12,6 @@ git clone https://github.com/sbwml/packages_lang_golang -b 25.x feeds/packages/l
 # node - prebuilt
 git clone https://github.com/sbwml/feeds_packages_lang_node-prebuilt feeds/packages/lang/node -b packages-24.10
 
-# linkease
-git clone https://github.com/QuickWrt/openwrt_linkease package/new/openwrt_linkease
-
 # quickwrt packages
 git clone https://github.com/QuickWrt/openwrt_packages package/new/openwrt_packages
 
@@ -22,17 +19,17 @@ git clone https://github.com/QuickWrt/openwrt_packages package/new/openwrt_packa
 git clone https://github.com/QuickWrt/openwrt_helloworld package/new/openwrt_helloworld
 
 # luci-app-sqm
-git clone https://git.kejizero.online/zhao/luci-app-sqm feeds/luci/applications/luci-app-sqm
+git clone https://git.cooluc.com/sbwml/luci-app-sqm feeds/luci/applications/luci-app-sqm
 
 # unzip
 git clone https://github.com/sbwml/feeds_packages_utils_unzip feeds/packages/utils/unzip
 
 # UPnP
-git clone https://git.kejizero.online/zhao/miniupnpd feeds/packages/net/miniupnpd -b v2.3.9
-git clone https://git.kejizero.online/zhao/luci-app-upnp feeds/luci/applications/luci-app-upnp -b openwrt-24.10
+git clone https://git.cooluc.com/sbwml/miniupnpd feeds/packages/net/miniupnpd -b v2.3.9
+git clone https://git.cooluc.com/sbwml/luci-app-upnp feeds/luci/applications/luci-app-upnp -b openwrt-24.10
 
 # Docker
-git clone https://git.kejizero.online/zhao/luci-app-dockerman -b openwrt-24.10 feeds/luci/applications/luci-app-dockerman
+git clone https://git.cooluc.com/sbwml/luci-app-dockerman -b openwrt-24.10 feeds/luci/applications/luci-app-dockerman
 git clone https://github.com/sbwml/packages_utils_docker feeds/packages/utils/docker
 git clone https://github.com/sbwml/packages_utils_dockerd feeds/packages/utils/dockerd
 git clone https://github.com/sbwml/packages_utils_containerd feeds/packages/utils/containerd
