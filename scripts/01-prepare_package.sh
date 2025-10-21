@@ -15,9 +15,6 @@ git clone https://github.com/sbwml/feeds_packages_lang_node-prebuilt feeds/packa
 # quickwrt packages
 git clone https://github.com/QuickWrt/openwrt_packages package/new/openwrt_packages
 
-# SSRP & Passwall
-git clone https://github.com/QuickWrt/openwrt_helloworld package/new/openwrt_helloworld
-
 # luci-app-sqm
 git clone https://git.cooluc.com/sbwml/luci-app-sqm feeds/luci/applications/luci-app-sqm
 
