@@ -33,7 +33,7 @@ cp -f ../OpenBox/kernel-6.6/arm/*.patch ./target/linux/generic/hack-6.6/
 cp -f ../OpenBox/kernel-6.6/net/*.patch ./target/linux/generic/hack-6.6/
 
 # FullCone module
-git clone https://git.kejizero.online/zhao/nft-fullcone package/new/nft-fullcone
+git clone https://git.cooluc.com/sbwml/nft-fullcone package/new/nft-fullcone
 
 # IPv6 NAT
 git clone https://github.com/sbwml/packages_new_nat6 package/new/nat6
