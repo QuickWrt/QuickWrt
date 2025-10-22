@@ -340,7 +340,7 @@ load_configuration() {
     print_info "加载配置文件..."
     if [[ "$arch" == "rockchip" ]]; then
         echo -e "${BLUE_COLOR}├─ 选择 Rockchip 架构配置${RESET}"
-        if cp -rf ../OpenBox/Config/Rockchip.config ./.config; then
+        if cp -rf ../OpenBox/config/config-rockchip ./.config; then
             echo -e "${GREEN_COLOR}└─ ✓ Rockchip 配置文件加载完成${RESET}"
             print_success "Rockchip 架构配置文件已加载"
         else
@@ -348,7 +348,7 @@ load_configuration() {
         fi
     elif [[ "$arch" == "x86_64" ]]; then
         echo -e "${BLUE_COLOR}├─ 选择 x86_64 架构配置${RESET}"
-        if cp -rf ../OpenBox/Config/X86_64.config ./.config; then
+        if cp -rf ../OpenBox/config/config-x86_64 ./.config; then
             echo -e "${GREEN_COLOR}└─ ✓ x86_64 配置文件加载完成${RESET}"
             print_success "x86_64 架构配置文件已加载"
         else
