@@ -515,12 +515,12 @@ setup_kmod_package_name() {
     print_info "设置 KMOD 包名..."
     
     # 检查本地内核版本文件是否存在
-    if [ ! -f "/include/kernel-6.6" ]; then
-        error_exit "内核版本文件 /include/kernel-6.6 不存在"
+    if [ ! -f "include/kernel-6.6" ]; then
+        error_exit "内核版本文件 include/kernel-6.6 不存在"
     fi
     
     echo -e "${BLUE_COLOR}├─ 读取内核版本信息...${RESET}"
-    get_kernel_version=$(cat /include/kernel-6.6)
+    get_kernel_version=$(cat include/kernel-6.6)
     
     if [ -z "$get_kernel_version" ]; then
         error_exit "无法读取内核版本信息"
