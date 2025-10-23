@@ -337,24 +337,39 @@ execute_build_scripts() {
 # 加载配置文件
 load_configuration() {
     local arch="$1"
-    
+    local config_file=""
+
     print_info "加载配置文件..."
-    if [[ "$arch" == "rockchip" ]]; then
-        echo -e "${BLUE_COLOR}├─ 选择 Rockchip 架构配置${RESET}"
-        if cp -rf ../OpenBox/config/config-rockchip ./.config; then
-            echo -e "${GREEN_COLOR}└─ ✓ Rockchip 配置文件加载完成${RESET}"
-            print_success "Rockchip 架构配置文件已加载"
-        else
-            error_exit "Rockchip 配置文件加载失败"
-        fi
-    elif [[ "$arch" == "x86_64" ]]; then
-        echo -e "${BLUE_COLOR}├─ 选择 x86_64 架构配置${RESET}"
-        if cp -rf ../OpenBox/config/config-x86_64 ./.config; then
-            echo -e "${GREEN_COLOR}└─ ✓ x86_64 配置文件加载完成${RESET}"
-            print_success "x86_64 架构配置文件已加载"
-        else
-            error_exit "x86_64 配置文件加载失败"
-        fi
+
+    # 根据架构选择配置文件
+    case "$arch" in
+        rockchip)
+            config_file="../OpenBox/config/config-rockchip"
+            echo -e "${BLUE_COLOR}├─ 选择 Rockchip 架构配置${RESET}"
+            ;;
+        x86_64)
+            config_file="../OpenBox/config/config-x86_64"
+            echo -e "${BLUE_COLOR}├─ 选择 x86_64 架构配置${RESET}"
+            ;;
+        *)
+            error_exit "未知架构: $arch"
+            ;;
+    esac
+
+    # 复制配置文件
+    if cp -rf "$config_file" ./.config; then
+        echo -e "${GREEN_COLOR}└─ ✓ 配置文件加载完成${RESET}"
+        print_success "$arch 架构配置文件已加载"
+    else
+        error_exit "$arch 架构配置文件加载失败"
+    fi
+
+    # 更新版本号
+    if [[ -n "$tag_version" ]]; then
+        echo -e "${BLUE_COLOR}├─ 更新版本信息...${RESET}"
+        sed -i "s|^CONFIG_VERSION_NUMBER=\".*\"|CONFIG_VERSION_NUMBER=\"$tag_version\"|" .config
+        sed -i "s|^CONFIG_VERSION_REPO=\".*\"|CONFIG_VERSION_REPO=\"https://downloads.openwrt.org/releases/$tag_version\"|" .config
+        echo -e "${GREEN_COLOR}└─ ✓ 已更新版本号为：$tag_version${RESET}"
     fi
 }
 
