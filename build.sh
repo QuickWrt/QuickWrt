@@ -510,40 +510,6 @@ compile_openwrt() {
     echo -e "${BLUE_COLOR}└─ 编译耗时: $(( SEC / 3600 ))h,$(( (SEC % 3600) / 60 ))m,$(( (SEC % 3600) % 60 ))s${RESET}"
 }
 
-# 编译 OpenWRT
-compile_openwrt() {
-    print_info "开始编译 OpenWRT..."
-    local starttime=$(date +'%Y-%m-%d %H:%M:%S')
-
-    echo -e "${BLUE_COLOR}├─ 更新 os-release 构建日期...${RESET}"
-    sed -i "/BUILD_DATE/d" package/base-files/files/usr/lib/os-release
-    sed -i "/BUILD_ID/aBUILD_DATE=\"$CURRENT_DATE\"" package/base-files/files/usr/lib/os-release
-    
-    echo -e "${BLUE_COLOR}├─ 执行 make 编译...${RESET}"
-    if make -j"$CPU_CORES" IGNORE_ERRORS="n m"; then
-        echo -e "${GREEN_COLOR}│   ✓ 编译过程完成${RESET}"
-    else
-        error_exit "OpenWrt 编译失败"
-    fi
-
-    # 计算编译时间
-    local endtime=$(date +'%Y-%m-%d %H:%M:%S')
-    local start_seconds=$(date --date="$starttime" +%s)
-    local end_seconds=$(date --date="$endtime" +%s)
-    local SEC=$((end_seconds-start_seconds))
-
-    echo -e "${BLUE_COLOR}├─ 检查编译结果...${RESET}"
-    if [ -f bin/targets/*/*/sha256sums ]; then
-        echo -e "${GREEN_COLOR}│   ✓ Build success! ${RESET}"
-    else
-        echo -e "${RED_COLOR}│   ✗ Build error... ${RESET}"
-        echo -e "${BLUE_COLOR}└─ 编译耗时: $(( SEC / 3600 ))h,$(( (SEC % 3600) / 60 ))m,$(( (SEC % 3600) % 60 ))s${RESET}"
-        exit 1
-    fi
-
-    echo -e "${BLUE_COLOR}└─ 编译耗时: $(( SEC / 3600 ))h,$(( (SEC % 3600) / 60 ))m,$(( (SEC % 3600) % 60 ))s${RESET}"
-}
-
 # 获取内核版本并设置 kmod 包名
 setup_kmod_package_name() {
     print_info "设置 KMOD 包名..."
