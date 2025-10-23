@@ -351,17 +351,12 @@ load_configuration() {
             config_file="../OpenBox/config/config-x86_64"
             echo -e "${BLUE_COLOR}├─ 选择 x86_64 架构配置${RESET}"
             ;;
-        *)
-            error_exit "未知架构: $arch"
-            ;;
     esac
 
     # 复制配置文件
-    if cp -rf "$config_file" ./.config; then
+    if [[ -n "$config_file" ]] && cp -rf "$config_file" ./.config; then
         echo -e "${GREEN_COLOR}└─ ✓ 配置文件加载完成${RESET}"
         print_success "$arch 架构配置文件已加载"
-    else
-        error_exit "$arch 架构配置文件加载失败"
     fi
 
     # 更新版本号
