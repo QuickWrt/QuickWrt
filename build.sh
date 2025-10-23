@@ -479,6 +479,10 @@ compile_toolchain() {
 compile_openwrt() {
     print_info "开始编译 OpenWRT..."
     local starttime=$(date +'%Y-%m-%d %H:%M:%S')
+
+    echo -e "${BLUE_COLOR}├─ 更新 os-release 构建日期...${RESET}"
+    sed -i "/BUILD_DATE/d" package/base-files/files/usr/lib/os-release
+    sed -i "/BUILD_ID/aBUILD_DATE=\"$CURRENT_DATE\"" package/base-files/files/usr/lib/os-release
     
     echo -e "${BLUE_COLOR}├─ 执行 make 编译...${RESET}"
     if make -j"$CPU_CORES" IGNORE_ERRORS="n m"; then
