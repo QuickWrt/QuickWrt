@@ -33,6 +33,7 @@ START_TIME=$(date +%s)
 CPU_CORES=$(nproc)
 BUILD_MODE="normal"
 TOOLCHAIN_ARCH=""
+CURRENT_DATE=$(date +%s)
 
 # =============================================================================
 # 函数定义
