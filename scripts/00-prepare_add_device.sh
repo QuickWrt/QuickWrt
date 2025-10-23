@@ -8,7 +8,7 @@ rsync -av ../OpenBox/device/rockchip/patches-6.6/ ./target/linux/rockchip/patche
 cp -f ../OpenBox/device/rockchip/02_network ./target/linux/rockchip/armv8/base-files/etc/board.d/02_network
 
 # ================================================================
-# 移植RK3399示例(针对官方完全不支持的设备。采用补丁方式)
+# 移植RK3399示例(针对官方完全不支持的设备。采用补丁集中同步)
 # ================================================================
 # 增加tvi3315a设备
 echo -e "\\ndefine Device/tvi_tvi3315a
