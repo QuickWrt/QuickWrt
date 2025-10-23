@@ -4,9 +4,6 @@
 # 使用 O2 级别的优化
 sed -i 's/Os/O2/g' include/target.mk
 
-# 固件版本号设置
-git describe --abbrev=0 --tags > version.txt
-
 # 内核版本设置
 cp -rf ../OpenBox/kernel-6.6/kernel/0001-linux-module-video.patch ./package/0001-linux-module-video.patch
 git apply package/0001-linux-module-video.patch
