@@ -33,6 +33,7 @@ START_TIME=$(date +%s)
 CPU_CORES=$(nproc)
 BUILD_MODE="normal"
 TOOLCHAIN_ARCH=""
+CURRENT_DATE=$(date +%s)
 
 # =============================================================================
 # 函数定义
@@ -336,24 +337,34 @@ execute_build_scripts() {
 # 加载配置文件
 load_configuration() {
     local arch="$1"
-    
+    local config_file=""
+
     print_info "加载配置文件..."
-    if [[ "$arch" == "rockchip" ]]; then
-        echo -e "${BLUE_COLOR}├─ 选择 Rockchip 架构配置${RESET}"
-        if cp -rf ../OpenBox/config/config-rockchip ./.config; then
-            echo -e "${GREEN_COLOR}└─ ✓ Rockchip 配置文件加载完成${RESET}"
-            print_success "Rockchip 架构配置文件已加载"
-        else
-            error_exit "Rockchip 配置文件加载失败"
-        fi
-    elif [[ "$arch" == "x86_64" ]]; then
-        echo -e "${BLUE_COLOR}├─ 选择 x86_64 架构配置${RESET}"
-        if cp -rf ../OpenBox/config/config-x86_64 ./.config; then
-            echo -e "${GREEN_COLOR}└─ ✓ x86_64 配置文件加载完成${RESET}"
-            print_success "x86_64 架构配置文件已加载"
-        else
-            error_exit "x86_64 配置文件加载失败"
-        fi
+
+    # 根据架构选择配置文件
+    case "$arch" in
+        rockchip)
+            config_file="../OpenBox/config/config-rockchip"
+            echo -e "${BLUE_COLOR}├─ 选择 Rockchip 架构配置${RESET}"
+            ;;
+        x86_64)
+            config_file="../OpenBox/config/config-x86_64"
+            echo -e "${BLUE_COLOR}├─ 选择 x86_64 架构配置${RESET}"
+            ;;
+    esac
+
+    # 复制配置文件
+    if [[ -n "$config_file" ]] && cp -rf "$config_file" ./.config; then
+        echo -e "${GREEN_COLOR}└─ ✓ 配置文件加载完成${RESET}"
+        print_success "$arch 架构配置文件已加载"
+    fi
+
+    # 更新版本号
+    if [[ -n "$tag_version" ]]; then
+        echo -e "${BLUE_COLOR}├─ 更新版本信息...${RESET}"
+        sed -i "s|^CONFIG_VERSION_NUMBER=\".*\"|CONFIG_VERSION_NUMBER=\"$tag_version\"|" .config
+        sed -i "s|^CONFIG_VERSION_REPO=\".*\"|CONFIG_VERSION_REPO=\"https://downloads.openwrt.org/releases/$tag_version\"|" .config
+        echo -e "${GREEN_COLOR}└─ ✓ 已更新版本号为：$tag_version${RESET}"
     fi
 }
 
@@ -479,6 +490,10 @@ compile_toolchain() {
 compile_openwrt() {
     print_info "开始编译 OpenWRT..."
     local starttime=$(date +'%Y-%m-%d %H:%M:%S')
+
+    echo -e "${BLUE_COLOR}├─ 更新 os-release 构建日期...${RESET}"
+    sed -i "/BUILD_DATE/d" package/base-files/files/usr/lib/os-release
+    sed -i "/BUILD_ID/aBUILD_DATE=\"$CURRENT_DATE\"" package/base-files/files/usr/lib/os-release
     
     echo -e "${BLUE_COLOR}├─ 执行 make 编译...${RESET}"
     if make -j"$CPU_CORES" IGNORE_ERRORS="n m"; then
@@ -503,6 +518,364 @@ compile_openwrt() {
     fi
 
     echo -e "${BLUE_COLOR}└─ 编译耗时: $(( SEC / 3600 ))h,$(( (SEC % 3600) / 60 ))m,$(( (SEC % 3600) % 60 ))s${RESET}"
+}
+
+# 获取内核版本并设置 kmod 包名
+setup_kmod_package_name() {
+    print_info "设置 KMOD 包名..."
+    
+    # 检查本地内核版本文件是否存在
+    if [ ! -f "include/kernel-6.6" ]; then
+        error_exit "内核版本文件 include/kernel-6.6 不存在"
+    fi
+    
+    echo -e "${BLUE_COLOR}├─ 读取内核版本信息...${RESET}"
+    get_kernel_version=$(cat include/kernel-6.6)
+    
+    if [ -z "$get_kernel_version" ]; then
+        error_exit "无法读取内核版本信息"
+    fi
+    
+    echo -e "${BLUE_COLOR}├─ 计算 KMOD 哈希值...${RESET}"
+    kmod_hash=$(echo -e "$get_kernel_version" | awk -F'HASH-' '{print $2}' | awk '{print $1}' | tail -1 | md5sum | awk '{print $1}')
+    
+    if [ -z "$kmod_hash" ]; then
+        error_exit "KMOD 哈希值计算失败"
+    fi
+    
+    kmodpkg_name=$(echo $(echo -e "$get_kernel_version" | awk -F'HASH-' '{print $2}' | awk '{print $1}')~$(echo $kmod_hash)-r1)
+    
+    if [ -z "$kmodpkg_name" ]; then
+        error_exit "KMOD 包名生成失败"
+    fi
+    
+    echo -e "${GREEN_COLOR}└─ ✓ KMOD 包名设置为: $kmodpkg_name${RESET}"
+    print_success "KMOD 包配置完成"
+}
+
+# 打包和生成OTA文件
+package_and_generate_ota() {
+    print_info "开始打包和生成OTA文件..."
+    
+    if [ "$ARCHITECTURE" = "x86_64" ]; then
+        process_x86_64 "$VERSION"
+    elif [ "$ARCHITECTURE" = "rockchip" ]; then
+        process_rockchip "$VERSION"
+    else
+        print_warning "未知架构: $ARCHITECTURE，跳过打包和OTA生成"
+    fi
+    
+    print_success "打包和OTA生成完成"
+}
+
+# 处理 x86_64 架构
+process_x86_64() {
+    local version="$1"
+    
+    print_info "处理 x86_64 架构的打包..."
+    
+    # KMOD 包处理
+    echo -e "${BLUE_COLOR}├─ 准备 KMOD 包...${RESET}"
+    if cp -a bin/targets/x86/*/packages $kmodpkg_name/ && \
+       rm -f $kmodpkg_name/Packages* && \
+       cp -a bin/packages/x86_64/base/rtl88*a-firmware*.ipk $kmodpkg_name/ && \
+       cp -a bin/packages/x86_64/base/natflow*.ipk $kmodpkg_name/; then
+        echo -e "${GREEN_COLOR}│   ✓ KMOD 文件复制完成${RESET}"
+    else
+        print_warning "KMOD 文件复制过程中出现警告"
+    fi
+    
+    echo -e "${BLUE_COLOR}├─ 签名 KMOD 包...${RESET}"
+    if [ -f "kmod-sign" ] && bash kmod-sign $kmodpkg_name; then
+        echo -e "${GREEN_COLOR}│   ✓ KMOD 包签名完成${RESET}"
+    else
+        print_warning "跳过 KMOD 签名（未找到 kmod-sign 脚本）"
+    fi
+    
+    echo -e "${BLUE_COLOR}├─ 打包 KMOD...${RESET}"
+    if tar zcf x86_64-$kmodpkg_name.tar.gz $kmodpkg_name; then
+        echo -e "${GREEN_COLOR}│   ✓ KMOD 打包完成${RESET}"
+    else
+        error_exit "KMOD 打包失败"
+    fi
+    
+    echo -e "${BLUE_COLOR}├─ 清理临时文件...${RESET}"
+    rm -rf $kmodpkg_name
+    echo -e "${GREEN_COLOR}└─ ✓ 临时文件清理完成${RESET}"
+    
+    # 生成 OTA JSON
+    generate_x86_64_ota_json "$version"
+}
+
+# 生成 x86_64 OTA JSON
+generate_x86_64_ota_json() {
+    local version="$1"
+    
+    print_info "生成 x86_64 OTA JSON 文件..."
+    
+    echo -e "${BLUE_COLOR}├─ 创建 OTA 目录...${RESET}"
+    mkdir -p ota
+    
+    echo -e "${BLUE_COLOR}├─ 计算 SHA256 校验和...${RESET}"
+    local OTA_URL="https://github.com/QuickWrt/ZeroWrt/releases/download"
+    local VERSION_NUMBER=$(echo "$VERSION" | sed 's/v//g')
+    local SHA256=$(sha256sum bin/targets/x86/64*/*-generic-squashfs-combined-efi.img.gz | awk '{print $1}')
+    
+    echo -e "${BLUE_COLOR}├─ 生成 JSON 文件...${RESET}"
+    cat > ota/x86_64.json <<EOF
+{
+  "x86_64": [
+    {
+      "build_date": "$CURRENT_DATE",
+      "sha256sum": "$SHA256",
+      "url": "$OTA_URL/OpenWrt-$VERSION_NUMBER/zerowrt-$VERSION_NUMBER-x86-64-generic-squashfs-combined-efi.img.gz"
+    }
+  ]
+}
+EOF
+    
+    if [ -f "ota/x86_64.json" ]; then
+        echo -e "${GREEN_COLOR}└─ ✓ x86_64 OTA JSON 文件生成完成${RESET}"
+        print_success "OTA 文件位置: ota/x86_64.json"
+    else
+        error_exit "OTA JSON 文件生成失败"
+    fi
+}
+
+# 处理 rockchip 架构
+process_rockchip() {
+    local version="$1"
+    
+    print_info "处理 rockchip 架构的打包..."
+    
+    # KMOD 包处理
+    echo -e "${BLUE_COLOR}├─ 准备 KMOD 包...${RESET}"
+    if cp -a bin/targets/rockchip/armv8*/packages $kmodpkg_name && \
+       rm -f $kmodpkg_name/Packages* && \
+       cp -a bin/packages/aarch64_generic/base/rtl88*-firmware*.ipk $kmodpkg_name/ && \
+       cp -a bin/packages/aarch64_generic/base/natflow*.ipk $kmodpkg_name/; then
+        echo -e "${GREEN_COLOR}│   ✓ KMOD 文件复制完成${RESET}"
+    else
+        print_warning "KMOD 文件复制过程中出现警告"
+    fi
+    
+    echo -e "${BLUE_COLOR}├─ 签名 KMOD 包...${RESET}"
+    if [ -f "kmod-sign" ] && bash kmod-sign $kmodpkg_name; then
+        echo -e "${GREEN_COLOR}│   ✓ KMOD 包签名完成${RESET}"
+    else
+        print_warning "跳过 KMOD 签名（未找到 kmod-sign 脚本）"
+    fi
+    
+    echo -e "${BLUE_COLOR}├─ 打包 KMOD...${RESET}"
+    if tar zcf armv8-$kmodpkg_name.tar.gz $kmodpkg_name; then
+        echo -e "${GREEN_COLOR}│   ✓ KMOD 打包完成${RESET}"
+    else
+        error_exit "KMOD 打包失败"
+    fi
+    
+    echo -e "${BLUE_COLOR}├─ 清理临时文件...${RESET}"
+    rm -rf $kmodpkg_name
+    echo -e "${GREEN_COLOR}└─ ✓ 临时文件清理完成${RESET}"
+    
+    # 生成 OTA JSON
+    generate_rockchip_ota_json "$version"
+}
+
+# 生成 rockchip OTA JSON
+generate_rockchip_ota_json() {
+    local version="$1"
+    
+    print_info "生成 rockchip OTA JSON 文件..."
+    
+    echo -e "${BLUE_COLOR}├─ 创建 OTA 目录...${RESET}"
+    mkdir -p ota
+    
+    echo -e "${BLUE_COLOR}├─ 计算各设备的 SHA256 校验和...${RESET}"
+    local OTA_URL="https://github.com/QuickWrt/ZeroWrt/releases/download"
+    local VERSION_NUMBER=$(echo "$VERSION" | sed 's/v//g')
+    
+    # 计算各个设备的SHA256
+    local SHA256_armsom_sige3=$(sha256sum bin/targets/rockchip/armv8*/zerowrt-$VERSION_NUMBER-rockchip-armv8-armsom_sige3-squashfs-sysupgrade.img.gz | awk '{print $1}')
+    local SHA256_armsom_sige7=$(sha256sum bin/targets/rockchip/armv8*/zerowrt-$VERSION_NUMBER-rockchip-armv8-armsom_sige7-squashfs-sysupgrade.img.gz | awk '{print $1}')
+    local SHA256_t4=$(sha256sum bin/targets/rockchip/armv8*/zerowrt-$VERSION_NUMBER-rockchip-armv8-friendlyarm_nanopc-t4-squashfs-sysupgrade.img.gz | awk '{print $1}')
+    local SHA256_t6=$(sha256sum bin/targets/rockchip/armv8*/zerowrt-$VERSION_NUMBER-rockchip-armv8-friendlyarm_nanopc-t6-squashfs-sysupgrade.img.gz | awk '{print $1}')
+    local SHA256_r2c_plus=$(sha256sum bin/targets/rockchip/armv8*/zerowrt-$VERSION_NUMBER-rockchip-armv8-friendlyarm_nanopi-r2c-plus-squashfs-sysupgrade.img.gz | awk '{print $1}')
+    local SHA256_r2c=$(sha256sum bin/targets/rockchip/armv8*/zerowrt-$VERSION_NUMBER-rockchip-armv8-friendlyarm_nanopi-r2c-squashfs-sysupgrade.img.gz | awk '{print $1}')
+    local SHA256_r2s=$(sha256sum bin/targets/rockchip/armv8*/zerowrt-$VERSION_NUMBER-rockchip-armv8-friendlyarm_nanopi-r2s-squashfs-sysupgrade.img.gz | awk '{print $1}')
+    local SHA256_r3s=$(sha256sum bin/targets/rockchip/armv8*/zerowrt-$VERSION_NUMBER-rockchip-armv8-friendlyarm_nanopi-r3s-squashfs-sysupgrade.img.gz | awk '{print $1}')
+    local SHA256_r4s=$(sha256sum bin/targets/rockchip/armv8*/zerowrt-$VERSION_NUMBER-rockchip-armv8-friendlyarm_nanopi-r4s-squashfs-sysupgrade.img.gz | awk '{print $1}')
+    local SHA256_r4se=$(sha256sum bin/targets/rockchip/armv8*/zerowrt-$VERSION_NUMBER-rockchip-armv8-friendlyarm_nanopi-r4se-squashfs-sysupgrade.img.gz | awk '{print $1}')
+    local SHA256_r5c=$(sha256sum bin/targets/rockchip/armv8*/zerowrt-$VERSION_NUMBER-rockchip-armv8-friendlyarm_nanopi-r5c-squashfs-sysupgrade.img.gz | awk '{print $1}')
+    local SHA256_r5s=$(sha256sum bin/targets/rockchip/armv8*/zerowrt-$VERSION_NUMBER-rockchip-armv8-friendlyarm_nanopi-r5s-squashfs-sysupgrade.img.gz | awk '{print $1}')
+    local SHA256_r6c=$(sha256sum bin/targets/rockchip/armv8*/zerowrt-$VERSION_NUMBER-rockchip-armv8-friendlyarm_nanopi-r6c-squashfs-sysupgrade.img.gz | awk '{print $1}')
+    local SHA256_r6s=$(sha256sum bin/targets/rockchip/armv8*/zerowrt-$VERSION_NUMBER-rockchip-armv8-friendlyarm_nanopi-r6s-squashfs-sysupgrade.img.gz | awk '{print $1}')
+    local SHA256_huake_guangmiao_g4c=$(sha256sum bin/targets/rockchip/armv8*/zerowrt-$VERSION_NUMBER-rockchip-armv8-huake_guangmiao-g4c-squashfs-sysupgrade.img.gz | awk '{print $1}')
+    local SHA256_r66s=$(sha256sum bin/targets/rockchip/armv8*/zerowrt-$VERSION_NUMBER-rockchip-armv8-lunzn_fastrhino-r66s-squashfs-sysupgrade.img.gz | awk '{print $1}')
+    local SHA256_r68s=$(sha256sum bin/targets/rockchip/armv8*/zerowrt-$VERSION_NUMBER-rockchip-armv8-lunzn_fastrhino-r68s-squashfs-sysupgrade.img.gz | awk '{print $1}')
+    local SHA256_radxa_rock_5a=$(sha256sum bin/targets/rockchip/armv8*/zerowrt-$VERSION_NUMBER-rockchip-armv8-radxa_rock-5a-squashfs-sysupgrade.img.gz | awk '{print $1}')
+    local SHA256_radxa_rock_5b=$(sha256sum bin/targets/rockchip/armv8*/zerowrt-$VERSION_NUMBER-rockchip-armv8-radxa_rock-5b-squashfs-sysupgrade.img.gz | awk '{print $1}')
+    local SHA256_xunlong_orangepi_5_plus=$(sha256sum bin/targets/rockchip/armv8*/zerowrt-$VERSION_NUMBER-rockchip-armv8-xunlong_orangepi-5-plus-squashfs-sysupgrade.img.gz | awk '{print $1}')
+    local SHA256_xunlong_orangepi_5=$(sha256sum bin/targets/rockchip/armv8*/zerowrt-$VERSION_NUMBER-rockchip-armv8-xunlong_orangepi-5-squashfs-sysupgrade.img.gz | awk '{print $1}')
+    
+    echo -e "${BLUE_COLOR}├─ 生成 rockchip JSON 文件...${RESET}"
+    cat > ota/rockchip.json <<EOF
+{
+  "armsom,sige3": [
+    {
+      "build_date": "$CURRENT_DATE",
+      "sha256sum": "$SHA256_armsom_sige3",
+      "url": "$OTA_URL/OpenWrt-$VERSION_NUMBER/zerowrt-$VERSION_NUMBER-rockchip-armv8-armsom_sige3-squashfs-sysupgrade.img.gz"
+    }
+  ],
+  "armsom,sige7": [
+    {
+      "build_date": "$CURRENT_DATE",
+      "sha256sum": "$SHA256_armsom_sige7",
+      "url": "$OTA_URL/OpenWrt-$VERSION_NUMBER/zerowrt-$VERSION_NUMBER-rockchip-armv8-armsom_sige7-squashfs-sysupgrade.img.gz"
+    }
+  ],
+  "friendlyarm,nanopc-t4": [
+    {
+      "build_date": "$CURRENT_DATE",
+      "sha256sum": "$SHA256_t4",
+      "url": "$OTA_URL/OpenWrt-$VERSION_NUMBER/zerowrt-$VERSION_NUMBER-rockchip-armv8-friendlyarm_nanopc-t4-squashfs-sysupgrade.img.gz"
+    }
+  ],
+  "friendlyarm,nanopc-t6": [
+    {
+      "build_date": "$CURRENT_DATE",
+      "sha256sum": "$SHA256_t6",
+      "url": "$OTA_URL/OpenWrt-$VERSION_NUMBER/zerowrt-$VERSION_NUMBER-rockchip-armv8-friendlyarm_nanopc-t6-squashfs-sysupgrade.img.gz"
+    }
+  ],
+  "friendlyarm,nanopi-r2c-plus": [
+    {
+      "build_date": "$CURRENT_DATE",
+      "sha256sum": "$SHA256_r2c_plus",
+      "url": "$OTA_URL/OpenWrt-$VERSION_NUMBER/zerowrt-$VERSION_NUMBER-rockchip-armv8-friendlyarm_nanopi-r2c-plus-squashfs-sysupgrade.img.gz"
+    }
+  ],
+  "friendlyarm,nanopi-r2c": [
+    {
+      "build_date": "$CURRENT_DATE",
+      "sha256sum": "$SHA256_r2c",
+      "url": "$OTA_URL/OpenWrt-$VERSION_NUMBER/zerowrt-$VERSION_NUMBER-rockchip-armv8-friendlyarm_nanopi-r2c-squashfs-sysupgrade.img.gz"
+    }
+  ],
+  "friendlyarm,nanopi-r2s": [
+    {
+      "build_date": "$CURRENT_DATE",
+      "sha256sum": "$SHA256_r2s",
+      "url": "$OTA_URL/OpenWrt-$VERSION_NUMBER/zerowrt-$VERSION_NUMBER-rockchip-armv8-friendlyarm_nanopi-r2s-squashfs-sysupgrade.img.gz"
+    }
+  ],
+  "friendlyarm,nanopi-r3s": [
+    {
+      "build_date": "$CURRENT_DATE",
+      "sha256sum": "$SHA256_r3s",
+      "url": "$OTA_URL/OpenWrt-$VERSION_NUMBER/zerowrt-$VERSION_NUMBER-rockchip-armv8-friendlyarm_nanopi-r3s-squashfs-sysupgrade.img.gz"
+    }
+  ],
+  "friendlyarm,nanopi-r4s": [
+    {
+      "build_date": "$CURRENT_DATE",
+      "sha256sum": "$SHA256_r4s",
+      "url": "$OTA_URL/OpenWrt-$VERSION_NUMBER/zerowrt-$VERSION_NUMBER-rockchip-armv8-friendlyarm_nanopi-r4s-squashfs-sysupgrade.img.gz"
+    }
+  ],
+  "friendlyarm,nanopi-r4se": [
+    {
+      "build_date": "$CURRENT_DATE",
+      "sha256sum": "$SHA256_r4se",
+      "url": "$OTA_URL/OpenWrt-$VERSION_NUMBER/zerowrt-$VERSION_NUMBER-rockchip-armv8-friendlyarm_nanopi-r4se-squashfs-sysupgrade.img.gz"
+    }
+  ],
+  "friendlyarm,nanopi-r5c": [
+    {
+      "build_date": "$CURRENT_DATE",
+      "sha256sum": "$SHA256_r5c",
+      "url": "$OTA_URL/OpenWrt-$VERSION_NUMBER/zerowrt-$VERSION_NUMBER-rockchip-armv8-friendlyarm_nanopi-r5c-squashfs-sysupgrade.img.gz"
+    }
+  ],
+  "friendlyarm,nanopi-r5s": [
+    {
+      "build_date": "$CURRENT_DATE",
+      "sha256sum": "$SHA256_r5s",
+      "url": "$OTA_URL/OpenWrt-$VERSION_NUMBER/zerowrt-$VERSION_NUMBER-rockchip-armv8-friendlyarm_nanopi-r5s-squashfs-sysupgrade.img.gz"
+    }
+  ],
+  "friendlyarm,nanopi-r6c": [
+    {
+      "build_date": "$CURRENT_DATE",
+      "sha256sum": "$SHA256_r6c",
+      "url": "$OTA_URL/OpenWrt-$VERSION_NUMBER/zerowrt-$VERSION_NUMBER-rockchip-armv8-friendlyarm_nanopi-r6c-squashfs-sysupgrade.img.gz"
+    }
+  ],
+  "friendlyarm,nanopi-r6s": [
+    {
+      "build_date": "$CURRENT_DATE",
+      "sha256sum": "$SHA256_r6s",
+      "url": "$OTA_URL/OpenWrt-$VERSION_NUMBER/zerowrt-$VERSION_NUMBER-rockchip-armv8-friendlyarm_nanopi-r6s-squashfs-sysupgrade.img.gz"
+    }
+  ],
+  "huake,guangmiao-g4c": [
+    {
+      "build_date": "$CURRENT_DATE",
+      "sha256sum": "$SHA256_huake_guangmiao_g4c",
+      "url": "$OTA_URL/OpenWrt-$VERSION_NUMBER/zerowrt-$VERSION_NUMBER-rockchip-armv8-huake_guangmiao-g4c-squashfs-sysupgrade.img.gz"
+    }
+  ],
+  "lunzn,fastrhino-r66s": [
+    {
+      "build_date": "$CURRENT_DATE",
+      "sha256sum": "$SHA256_r66s",
+      "url": "$OTA_URL/OpenWrt-$VERSION_NUMBER/zerowrt-$VERSION_NUMBER-rockchip-armv8-lunzn_fastrhino-r66s-squashfs-sysupgrade.img.gz"
+    }
+  ],
+  "lunzn,fastrhino-r68s": [
+    {
+      "build_date": "$CURRENT_DATE",
+      "sha256sum": "$SHA256_r68s",
+      "url": "$OTA_URL/OpenWrt-$VERSION_NUMBER/zerowrt-$VERSION_NUMBER-rockchip-armv8-lunzn_fastrhino-r68s-squashfs-sysupgrade.img.gz"
+    }
+  ],
+  "radxa,rock-5a": [
+    {
+      "build_date": "$CURRENT_DATE",
+      "sha256sum": "$SHA256_radxa_rock_5a",
+      "url": "$OTA_URL/OpenWrt-$VERSION_NUMBER/zerowrt-$VERSION_NUMBER-rockchip-armv8-radxa_rock-5a-squashfs-sysupgrade.img.gz"
+    }
+  ],
+  "radxa,rock-5b": [
+    {
+      "build_date": "$CURRENT_DATE",
+      "sha256sum": "$SHA256_radxa_rock_5b",
+      "url": "$OTA_URL/OpenWrt-$VERSION_NUMBER/zerowrt-$VERSION_NUMBER-rockchip-armv8-radxa_rock-5b-squashfs-sysupgrade.img.gz"
+    }
+  ],
+  "xunlong,orangepi-5-plus": [
+    {
+      "build_date": "$CURRENT_DATE",
+      "sha256sum": "$SHA256_xunlong_orangepi_5_plus",
+      "url": "$OTA_URL/OpenWrt-$VERSION_NUMBER/zerowrt-$VERSION_NUMBER-rockchip-armv8-xunlong_orangepi-5-plus-squashfs-sysupgrade.img.gz"
+    }
+  ],
+  "xunlong,orangepi-5": [
+    {
+      "build_date": "$CURRENT_DATE",
+      "sha256sum": "$SHA256_xunlong_orangepi_5",
+      "url": "$OTA_URL/OpenWrt-$VERSION_NUMBER/zerowrt-$VERSION_NUMBER-rockchip-armv8-xunlong_orangepi-5-squashfs-sysupgrade.img.gz"
+    }
+  ]
+}
+EOF
+    
+    if [ -f "ota/rockchip.json" ]; then
+        echo -e "${GREEN_COLOR}└─ ✓ rockchip OTA JSON 文件生成完成${RESET}"
+        print_success "OTA 文件位置: ota/rockchip.json"
+    else
+        error_exit "OTA JSON 文件生成失败"
+    fi
 }
 
 # =============================================================================
@@ -561,6 +934,11 @@ main() {
             compile_toolchain
             ;;
     esac
+
+    if [[ "$BUILD_MODE" != "toolchain-only" ]]; then
+        setup_kmod_package_name
+        package_and_generate_ota
+    fi
     
     # 计算总耗时
     local END_TIME=$(date +%s)

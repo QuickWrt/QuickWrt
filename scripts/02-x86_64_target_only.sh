@@ -28,30 +28,3 @@ exit 0
 wget https://downloads.openwrt.org/releases/${latest_version}/targets/x86/64/profiles.json
 jq -r '.linux_kernel.vermagic' profiles.json >.vermagic
 sed -i -e 's/^\(.\).*vermagic$/\1cp $(TOPDIR)\/.vermagic $(LINUX_DIR)\/.vermagic/' include/kernel-defaults.mk
-
-# Distfeeds.conf
-mkdir -p files/etc/opkg
-cat > files/etc/opkg/distfeeds.conf <<EOF
-src/gz openwrt_base https://mirrors.tuna.tsinghua.edu.cn/openwrt/releases/24.10.3/packages/x86_64/base
-src/gz openwrt_luci https://mirrors.tuna.tsinghua.edu.cn/openwrt/releases/24.10.3/packages/x86_64/luci
-src/gz openwrt_packages https://mirrors.tuna.tsinghua.edu.cn/openwrt/releases/24.10.3/packages/x86_64/packages
-src/gz openwrt_routing https://mirrors.tuna.tsinghua.edu.cn/openwrt/releases/24.10.3/packages/x86_64/routing
-src/gz openwrt_telephony https://mirrors.tuna.tsinghua.edu.cn/openwrt/releases/24.10.3/packages/x86_64/telephony
-src/gz openwrt_core https://mirrors.tuna.tsinghua.edu.cn/openwrt/releases/24.10.3/targets/x86/64/kmods/6.6.104-1-3505295dd1edf1c0eda57c9ce372bf57
-EOF
-
-# adguardhome
-mkdir -p files/usr/bin
-AGH_CORE=$(curl -sL https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest | grep /AdGuardHome_linux_amd64 | awk -F '"' '{print $4}')
-wget -qO- $AGH_CORE | tar xOvz > files/usr/bin/AdGuardHome
-chmod +x files/usr/bin/AdGuardHome
-
-# mihomo
-mkdir -p files/etc/openclash/core
-CLASH_META_URL="https://raw.githubusercontent.com/vernesong/OpenClash/core/master/meta/clash-linux-amd64.tar.gz"
-GEOIP_URL="https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat"
-GEOSITE_URL="https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat"
-wget -qO- $CLASH_META_URL | tar xOvz > files/etc/openclash/core/clash_meta
-wget -qO- $GEOIP_URL > files/etc/openclash/GeoIP.dat
-wget -qO- $GEOSITE_URL > files/etc/openclash/GeoSite.dat
-chmod +x files/etc/openclash/core/clash*
