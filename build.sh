@@ -17,7 +17,7 @@ readonly RESET='\033[0m'
 # 全局常量定义
 # =============================================================================
 readonly SCRIPT_NAME="OpenWRT 构建系统"
-readonly SCRIPT_VERSION="2.0.0"
+readonly SCRIPT_VERSION="2.0.1"
 readonly AUTHOR="OPPEN321"
 readonly BLOG="www.kejizero.online"
 readonly MIRROR="https://raw.githubusercontent.com/QuickWrt/QuickWrt/refs/heads/master"
