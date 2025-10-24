@@ -621,7 +621,7 @@ generate_x86_64_ota_json() {
     
     echo -e "${BLUE_COLOR}├─ 计算 SHA256 校验和...${RESET}"
     local OTA_URL="https://github.com/QuickWrt/ZeroWrt/releases/download"
-    local VERSION_NUMBER=$(echo "$version" | sed 's/v//g')  # 修复：使用 $version 而不是 $VERSION
+    local VERSION_NUMBER=$(echo "$version" | sed 's/v//g')
     local SHA256=$(sha256sum bin/targets/x86/64*/*-generic-squashfs-combined-efi.img.gz | awk '{print $1}')
     
     echo -e "${BLUE_COLOR}├─ 生成 JSON 文件...${RESET}"
@@ -695,7 +695,7 @@ generate_rockchip_ota_json() {
     
     echo -e "${BLUE_COLOR}├─ 计算各设备的 SHA256 校验和...${RESET}"
     local OTA_URL="https://github.com/QuickWrt/ZeroWrt/releases/download"
-    local VERSION_NUMBER=$(echo "$version" | sed 's/v//g')  # 修复：使用 $version 而不是 $VERSION
+    local VERSION_NUMBER=$(echo "$version" | sed 's/v//g')
     
     # 计算各个设备的SHA256
     local SHA256_armsom_sige3=$(sha256sum bin/targets/rockchip/armv8*/zerowrt-$VERSION_NUMBER-rockchip-armv8-armsom_sige3-squashfs-sysupgrade.img.gz | awk '{print $1}')
