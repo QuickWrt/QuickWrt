@@ -180,6 +180,8 @@ setup_build_environment() {
         export FORCE=1
         print_warning "以 root 权限运行，已启用强制不安全配置"
     fi
+
+    print_success "环境变量设置完成: TERM=$TERM, LC_ALL=$LC_ALL"
 }
 
 # 设置下载进度条
