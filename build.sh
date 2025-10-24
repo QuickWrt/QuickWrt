@@ -170,11 +170,6 @@ show_banner() {
 
 # 初始化构建环境
 setup_build_environment() {
-
-    export TERM=${TERM:-xterm-256color}
-    export LC_ALL=${LC_ALL:-C.UTF-8}
-    export LANG=${LANG:-en_US.UTF-8}
-    
     if [[ "$(id -u)" == "0" ]]; then
         export FORCE_UNSAFE_CONFIGURE=1
         export FORCE=1
