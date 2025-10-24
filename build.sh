@@ -213,7 +213,7 @@ prepare_source_code() {
     print_success "检测到最新版本: $tag_version"
 
     print_info "开始克隆源代码仓库..."
-    git -c advice.detachedHead=false clone --depth=1 --quiet https://github.com/openwrt/openwrt -b "v$tag_version"
+    git -c advice.detachedHead=false clone --depth=1 --branch "v$tag_version" --single-branch --quiet https://github.com/openwrt/openwrt
     git clone --depth=1 --quiet -b openwrt-24.10 https://github.com/immortalwrt/immortalwrt
     git clone --depth=1 --quiet -b openwrt-24.10 https://github.com/openwrt/openwrt openwrt_snap
 
