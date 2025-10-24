@@ -555,14 +555,17 @@ setup_kmod_package_name() {
 
 # 打包和生成OTA文件
 package_and_generate_ota() {
+    local architecture="$1"
+    local version="$2"
+    
     print_info "开始打包和生成OTA文件..."
     
-    if [ "$ARCHITECTURE" = "x86_64" ]; then
-        process_x86_64 "$VERSION"
-    elif [ "$ARCHITECTURE" = "rockchip" ]; then
-        process_rockchip "$VERSION"
+    if [ "$architecture" = "x86_64" ]; then
+        process_x86_64 "$version"
+    elif [ "$architecture" = "rockchip" ]; then
+        process_rockchip "$version"
     else
-        print_warning "未知架构: $ARCHITECTURE，跳过打包和OTA生成"
+        print_warning "未知架构: $architecture，跳过打包和OTA生成"
     fi
     
     print_success "打包和OTA生成完成"
@@ -618,7 +621,7 @@ generate_x86_64_ota_json() {
     
     echo -e "${BLUE_COLOR}├─ 计算 SHA256 校验和...${RESET}"
     local OTA_URL="https://github.com/QuickWrt/ZeroWrt/releases/download"
-    local VERSION_NUMBER=$(echo "$VERSION" | sed 's/v//g')
+    local VERSION_NUMBER=$(echo "$version" | sed 's/v//g')
     local SHA256=$(sha256sum bin/targets/x86/64*/*-generic-squashfs-combined-efi.img.gz | awk '{print $1}')
     
     echo -e "${BLUE_COLOR}├─ 生成 JSON 文件...${RESET}"
@@ -692,7 +695,7 @@ generate_rockchip_ota_json() {
     
     echo -e "${BLUE_COLOR}├─ 计算各设备的 SHA256 校验和...${RESET}"
     local OTA_URL="https://github.com/QuickWrt/ZeroWrt/releases/download"
-    local VERSION_NUMBER=$(echo "$VERSION" | sed 's/v//g')
+    local VERSION_NUMBER=$(echo "$version" | sed 's/v//g')
     
     # 计算各个设备的SHA256
     local SHA256_armsom_sige3=$(sha256sum bin/targets/rockchip/armv8*/zerowrt-$VERSION_NUMBER-rockchip-armv8-armsom_sige3-squashfs-sysupgrade.img.gz | awk '{print $1}')
@@ -937,7 +940,7 @@ main() {
 
     if [[ "$BUILD_MODE" != "toolchain-only" ]]; then
         setup_kmod_package_name
-        package_and_generate_ota
+        package_and_generate_ota "$architecture" "$version"
     fi
     
     # 计算总耗时
