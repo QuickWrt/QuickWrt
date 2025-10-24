@@ -22,13 +22,22 @@ jobs:
         run: |
           latest_tag=$(git tag --list "v*" | sort -V | tail -n1)
           if [ -z "$latest_tag" ]; then
-            next_tag="v3.0"
+            next_tag="v2.0"
           else
             base=${latest_tag#v}
             major=$(echo $base | cut -d. -f1)
             minor=$(echo $base | cut -d. -f2)
-            next_minor=$((minor+1))
-            next_tag="v${major}.${next_minor}"
+            
+            if [ "$minor" -eq 20 ]; then
+              next_major=$((major + 1))
+              next_minor=0
+            else
+
+              next_major=$major
+              next_minor=$((minor + 1))
+            fi
+            
+            next_tag="v${next_major}.${next_minor}"
           fi
           echo "next_tag=$next_tag" >> $GITHUB_ENV
           echo "Next version: $next_tag"
