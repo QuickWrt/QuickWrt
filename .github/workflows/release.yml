@@ -22,7 +22,7 @@ jobs:
         run: |
           latest_tag=$(git tag --list "v*" | sort -V | tail -n1)
           if [ -z "$latest_tag" ]; then
-            next_tag="v2.0"
+            next_tag="v3.0"
           else
             base=${latest_tag#v}
             major=$(echo $base | cut -d. -f1)
