@@ -170,18 +170,11 @@ show_banner() {
 
 # 初始化构建环境
 setup_build_environment() {
-
-    export TERM=${TERM:-xterm-256color}
-    export LC_ALL=${LC_ALL:-C.UTF-8}
-    export LANG=${LANG:-en_US.UTF-8}
-    
     if [[ "$(id -u)" == "0" ]]; then
         export FORCE_UNSAFE_CONFIGURE=1
         export FORCE=1
         print_warning "以 root 权限运行，已启用强制不安全配置"
     fi
-
-    print_success "环境变量设置完成: TERM=$TERM, LC_ALL=$LC_ALL"，LANG=$LANG
 }
 
 # 设置下载进度条
