@@ -416,7 +416,7 @@ download_prebuilt_toolchain() {
     fi
     
     echo -e "${BLUE_COLOR}├─ 下载工具链文件...${RESET}"
-    local TOOLCHAIN_URL="https://github.com/QuickWrt/QuickWrt/releases/download/openwrt-24.10"
+    local TOOLCHAIN_URL="https://github.com/QuickWrt/ZeroWrt/releases/download/Toolchain-Cache"
     local toolchain_file="toolchain_musl_${TOOLCHAIN_ARCH}_gcc-13.tar.zst"
     
     if curl -L "${TOOLCHAIN_URL}/${toolchain_file}" -o toolchain.tar.zst ${CURL_OPTIONS}; then
