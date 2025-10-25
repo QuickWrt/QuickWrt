@@ -25,6 +25,6 @@ exit 0
 '> ./package/base-files/files/etc/rc.local
 
 #Vermagic
-wget https://downloads.openwrt.org/releases/${latest_version}/targets/x86/64/profiles.json
+wget https://downloads.openwrt.org/releases/$tag_version/targets/x86/64/profiles.json
 jq -r '.linux_kernel.vermagic' profiles.json >.vermagic
 sed -i -e 's/^\(.\).*vermagic$/\1cp $(TOPDIR)\/.vermagic $(LINUX_DIR)\/.vermagic/' include/kernel-defaults.mk
