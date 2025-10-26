@@ -175,11 +175,58 @@ cat << 'EOF' >> feeds/luci/modules/luci-mod-status/ucode/template/admin_status/i
 function addLinks() {
     var section = document.querySelector(".cbi-section");
     if (section) {
-        var links = document.createElement('div');
-        links.innerHTML = '<div class="table"><div class="tr"><div class="td left" width="33%"><a href="https://qm.qq.com/q/JbBVnkjzKa" target="_blank">QQ交流群</a></div><div class="td left" width="33%"><a href="https://t.me/kejizero" target="_blank">TG交流群</a></div><div class="td left"><a href="https://openwrt.kejizero.online" target="_blank">固件地址</a></div></div></div>';
-        section.appendChild(links);
+        // 创建表格容器
+        var table = document.createElement('div');
+        table.className = 'table';
+        
+        // 创建行
+        var row = document.createElement('div');
+        row.className = 'tr';
+        
+        // 左列：帮助与反馈
+        var leftCell = document.createElement('div');
+        leftCell.className = 'td left';
+        leftCell.style.width = '33%';
+        leftCell.textContent = '帮助与反馈';
+        
+        // 右列：三个按钮
+        var rightCell = document.createElement('div');
+        rightCell.className = 'td left';
+        
+        // 创建QQ交流群按钮
+        var qqLink = document.createElement('a');
+        qqLink.href = 'https://qm.qq.com/q/JbBVnkjzKa';
+        qqLink.target = '_blank';
+        qqLink.className = 'cbi-button';
+        qqLink.style.marginRight = '10px';
+        qqLink.textContent = 'QQ交流群';
+        
+        // 创建TG交流群按钮
+        var tgLink = document.createElement('a');
+        tgLink.href = 'https://t.me/kejizero';
+        tgLink.target = '_blank';
+        tgLink.className = 'cbi-button';
+        tgLink.style.marginRight = '10px';
+        tgLink.textContent = 'TG交流群';
+        
+        // 创建固件地址按钮
+        var firmwareLink = document.createElement('a');
+        firmwareLink.href = 'https://openwrt.kejizero.online';
+        firmwareLink.target = '_blank';
+        firmwareLink.className = 'cbi-button';
+        firmwareLink.textContent = '固件地址';
+        
+        // 组装元素
+        rightCell.appendChild(qqLink);
+        rightCell.appendChild(tgLink);
+        rightCell.appendChild(firmwareLink);
+        
+        row.appendChild(leftCell);
+        row.appendChild(rightCell);
+        table.appendChild(row);
+        section.appendChild(table);
     } else {
-        setTimeout(addLinks, 100); // 继续等待 `.cbi-section` 加载
+        setTimeout(addLinks, 100);
     }
 }
 
