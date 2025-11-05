@@ -106,8 +106,7 @@ show_banner() {
     echo -e "${BOLD}${BLUE_COLOR}║${RESET} 🛠️  开发者: $AUTHOR                                              ${BOLD}${BLUE_COLOR}║${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}║${RESET} 🌐 博客: $BLOG                                     ${BOLD}${BLUE_COLOR}║${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}║${RESET} 💡 理念: 开源 · 定制化 · 高性能                                  ${BOLD}${BLUE_COLOR}║${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET} 📦 版本: $VERSION                                     ${BOLD}${BLUE_COLOR}║${RESET}"
-    
+    echo -e "${BOLD}${BLUE_COLOR}║${RESET} 📦 版本: $VERSION                                     ${BOLD}${BLUE_COLOR}║${RESET}"    
     echo -e "${BOLD}${BLUE_COLOR}╠══════════════════════════════════════════════════════════════════╣${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}║${RESET} 🔧 构建开始: $(date '+%Y-%m-%d %H:%M:%S')                                 ${BOLD}${BLUE_COLOR}║${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}║${RESET} ⚡ 处理器核心: $CPU_CORES 个                                              ${BOLD}${BLUE_COLOR}║${RESET}"
