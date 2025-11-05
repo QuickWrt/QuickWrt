@@ -252,13 +252,53 @@ prepare_source_code() {
     echo -e "  ${BOLD}${YELLOW_COLOR}➤${RESET} ${BOLD}所有软件包源已就绪，可以开始配置编译${RESET}"
     echo ""
 
-    ### 第五步：更新 feeds.conf.default ###
+    ### 第五步：更新密钥文件 ###
     clear
-    echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
-    echo -e "${BOLD}${WHITE}                   更新 feeds.conf.default [3/5]${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
+    echo -e "${BOLD}${WHITE}                         更新密钥文件 [5/5]${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
     echo ""
+
+    echo -e "  ${BOLD}${CYAN_COLOR}⟳${RESET} ${BOLD}开始更新安全密钥文件...${RESET}"
+    echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
+    echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 🔑 操作: 下载并安装密钥文件${RESET}"
+    echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 🌐 镜像源: ${CYAN_COLOR}$mirror${RESET}"
+    echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
+
+    # 下载密钥文件
+    echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 📥 正在下载密钥文件...${RESET}"
+    if curl -fs --connect-timeout 30 "$mirror/openwrt/patch/key.tar.gz" -o key.tar.gz 2>/dev/null; then
+        echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${GREEN_COLOR}✓${RESET} ${BOLD}密钥文件下载成功${RESET}"
     
+        # 解压密钥文件
+        echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 📂 正在解压密钥文件...${RESET}"
+        if tar -zxf key.tar.gz 2>/dev/null; then
+            echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${GREEN_COLOR}✓${RESET} ${BOLD}密钥文件解压成功${RESET}"
+        
+            # 清理临时文件
+            echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 🧹 清理临时文件...${RESET}"
+            if rm -f key.tar.gz 2>/dev/null; then
+                echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${GREEN_COLOR}✓${RESET} ${BOLD}临时文件已清理${RESET}"
+            else
+                echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${YELLOW_COLOR}⚠${RESET} ${BOLD}临时文件清理失败${RESET}"
+            fi
+        
+            echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
+            echo -e "  ${BOLD}${GREEN_COLOR}✓${RESET} ${BOLD}密钥文件更新完成${RESET}"
+            echo -e "  ${BOLD}${YELLOW_COLOR}➤${RESET} ${BOLD}安全密钥已配置，准备编译环境${RESET}"
+        else
+            echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${RED_COLOR}✗${RESET} ${BOLD}密钥文件解压失败${RESET}"
+            echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
+            echo -e "  ${BOLD}${RED_COLOR}✗${RESET} ${BOLD}密钥更新失败${RESET}"
+            return 1
+        fi
+    else
+        echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${RED_COLOR}✗${RESET} ${BOLD}密钥文件下载失败${RESET}"
+        echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
+        echo -e "  ${BOLD}${YELLOW_COLOR}⚠${RESET} ${BOLD}请检查网络连接或镜像源可用性${RESET}"
+        return 1
+    fi
+
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■${RESET}"
     echo -e "${BOLD}${GREEN_COLOR}                   源代码准备阶段完成！${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■${RESET}"
