@@ -45,7 +45,7 @@ sed -i '/uhttpd-mod-ubus/d' feeds/luci/collections/luci-light/Makefile
 sed -i 's/+luci-nginx \\$/+luci-nginx/' feeds/luci/collections/luci-light/Makefile
 
 # Use specific optimizations
-if [ "$platform" = "x86_64" ]; then
+if [ "$arch" = "x86_64" ]; then
     sed -i 's/O2/O2 -march=x86-64-v2/g' include/target.mk
     sed -i 's,no-mips16 no-lto,no-mips16,g' feeds/packages/libs/libsodium/Makefile
     echo '#!/bin/sh
@@ -66,7 +66,7 @@ if [ "$platform" = "x86_64" ]; then
 
     exit 0
     '> ./package/base-files/files/etc/rc.local
-elif [ "$platform" = "rockchip" ]; then
+elif [ "$arch" = "rockchip" ]; then
     sed -i 's,-mcpu=generic,-march=armv8-a+crc+crypto,g' include/target.mk
     sed -i 's,kmod-r8168,kmod-r8169,g' target/linux/rockchip/image/armv8.mk
 fi
