@@ -172,7 +172,7 @@ prepare_source_code() {
     echo -e "  ${BOLD}${CYAN_COLOR}⟳${RESET} ${BOLD}正在下载源代码，请稍候...${RESET}"
     
     # 克隆源代码（隐藏所有错误输出）
-    if git -c advice.detachedHead=false clone --depth=1 --branch "v$tag_version" --single-branch --quiet https://github.com/openwrt/openwrt 2>/dev/null; then
+    if git -c advice.detachedHead=false clone --depth=1 --branch "v$tag_version" --single-branch --quiet https://github.com/openwrt/openwrt && cd openwrt 2>/dev/null; then
         echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
         echo -e "  ${BOLD}${GREEN_COLOR}✓${RESET} ${BOLD}源代码克隆成功${RESET}"
         echo -e "  ${BOLD}${YELLOW_COLOR}➤${RESET} ${BOLD}存储位置: ${GREEN_COLOR}$(pwd)/openwrt${RESET}"
