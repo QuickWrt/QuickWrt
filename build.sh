@@ -17,11 +17,24 @@ VERSION='v1.2.0 (2025.11.04)'
 export AUTHOR="OPPEN321"
 export BLOG="www.kejizero.online"
 export MIRROR="https://openwrt.kejizero.xyz"
-export ARCH=("rockchip" "x86_64")
-export BUILD_MODE="${1:-accelerated}"
 export CPU_CORES=$(nproc)
-export GCC_VERSION=14
+export GCC_VERSION=${gcc_version:-13}
+
+# 设备类型
 case "$1" in
+    "rockchip") 
+        export ARCH="rockchip"
+        ;;
+    "x86_64") 
+        export ARCH "x86_64"
+        ;;
+    *) 
+        export ARCH="x86_64"
+        ;;
+esac
+
+# 编译模式
+case "$2" in
     "accelerated") 
         export BUILD_MODE="加速编译"
         ;;
@@ -62,6 +75,7 @@ show_banner() {
     echo -e "${BOLD}${BLUE_COLOR}║${RESET} ⚡ 处理器核心: $CPU_CORES 个                                              ${BOLD}${BLUE_COLOR}║${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}║${RESET} 🐧 系统用户: $(whoami)                                                ${BOLD}${BLUE_COLOR}║${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}║${RESET} 🔬 GCC 版本: $GCC_VERSION                                                  ${BOLD}${BLUE_COLOR}║${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}║${RESET} 🏗️  构建类型: $ARCH                                            ${BOLD}${BLUE_COLOR}║${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}║${RESET} 🚀 编译模式: $BUILD_MODE                                            ${BOLD}${BLUE_COLOR}║${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}╚══════════════════════════════════════════════════════════════════╝${RESET}"
     echo -e ""
