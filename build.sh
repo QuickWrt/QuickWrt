@@ -12,29 +12,29 @@ export BOLD='\e[1m'
 export RESET='\e[0m'
 
 # 当前脚本版本号
-VERSION='v1.2.0 (2025.11.04)'
+version='v1.2.0 (2025.11.04)'
 
 # 各变量默认值
-export AUTHOR="OPPEN321"
-export BLOG="www.kejizero.online"
-export MIRROR="https://openwrt.kejizero.xyz"
-export CPU_CORES=$(nproc)
-export GCC_VERSION=${gcc_version:-13}
-export PASSWORD="MzE4MzU3M2p6"
+export author="OPPEN321"
+export blog="www.kejizero.online"
+export mirror="https://openwrt.kejizero.xyz"
+export cpu_cores=$(nproc)
+export gcc=${gcc_version:-13}
+export password="MzE4MzU3M2p6"
 
 # 编译模式
 case "$2" in
     "accelerated") 
-        export BUILD_MODE="加速编译"
+        export build_mode="加速编译"
         ;;
     "normal") 
-        export BUILD_MODE="普通编译"
+        export build_mode="普通编译"
         ;;
     "toolchain-only") 
-        export BUILD_MODE="仅工具链"
+        export build_mode="仅工具链"
         ;;
     *) 
-        export BUILD_MODE="加速编译"
+        export build_mode="加速编译"
         ;;
 esac
 
@@ -60,7 +60,7 @@ validate_password() {
         local encoded_reversed_input=$(echo -n "$reversed_input" | base64)
         encoded_reversed_input=$(echo -n "$encoded_reversed_input" | tr -d '\n')
         
-        if [ "$encoded_reversed_input" = "$PASSWORD" ]; then
+        if [ "$encoded_reversed_input" = "$password" ]; then
             echo ""
             echo -e "${BOLD}${GREEN_COLOR}✅ 身份验证成功！正在加载系统...${RESET}"
             echo -e "${BOLD}${MAGENTA_COLOR}════════════════════════════════════════════════════════════════${RESET}"
@@ -103,16 +103,16 @@ show_banner() {
     echo -e "${BOLD}${BLUE_COLOR}║${RESET}${BOLD}${YELLOW_COLOR}         Open Source · Tailored · High Performance                ${RESET}${BOLD}${BLUE_COLOR}║${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}║${RESET}                                                                  ${BOLD}${BLUE_COLOR}║${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}╠══════════════════════════════════════════════════════════════════╣${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET} 🛠️  开发者: $AUTHOR                                              ${BOLD}${BLUE_COLOR}║${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET} 🌐 博客: $BLOG                                     ${BOLD}${BLUE_COLOR}║${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}║${RESET} 🛠️  开发者: $author                                              ${BOLD}${BLUE_COLOR}║${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}║${RESET} 🌐 博客: $blog                                     ${BOLD}${BLUE_COLOR}║${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}║${RESET} 💡 理念: 开源 · 定制化 · 高性能                                  ${BOLD}${BLUE_COLOR}║${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET} 📦 版本: $VERSION                                     ${BOLD}${BLUE_COLOR}║${RESET}"    
+    echo -e "${BOLD}${BLUE_COLOR}║${RESET} 📦 版本: $version                                     ${BOLD}${BLUE_COLOR}║${RESET}"    
     echo -e "${BOLD}${BLUE_COLOR}╠══════════════════════════════════════════════════════════════════╣${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}║${RESET} 🔧 构建开始: $(date '+%Y-%m-%d %H:%M:%S')                                 ${BOLD}${BLUE_COLOR}║${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET} ⚡ 处理器核心: $CPU_CORES 个                                              ${BOLD}${BLUE_COLOR}║${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}║${RESET} ⚡ 处理器核心: $cpu_cores 个                                              ${BOLD}${BLUE_COLOR}║${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}║${RESET} 🐧 系统用户: $(whoami)                                                ${BOLD}${BLUE_COLOR}║${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET} 🔬 GCC 版本: $GCC_VERSION                                                  ${BOLD}${BLUE_COLOR}║${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET} 🚀 编译模式: $BUILD_MODE                                            ${BOLD}${BLUE_COLOR}║${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}║${RESET} 🔬 GCC 版本: $gcc                                                          ${BOLD}${BLUE_COLOR}║${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}║${RESET} 🚀 编译模式: $build_mode                                            ${BOLD}${BLUE_COLOR}║${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}╚══════════════════════════════════════════════════════════════════╝${RESET}"
     echo -e ""
 }
@@ -127,20 +127,16 @@ setup_build_environment() {
 
 # 设置下载进度条
 setup_curl_progress() {
-    if curl --help | grep -q progress-bar; then
-        CURL_OPTIONS="--progress-bar"
-    else
-        CURL_OPTIONS="--silent"
+    if curl --help | grep progress-bar >/dev/null 2>&1; then
+        CURL_BAR="--progress-bar";
     fi
-    export CURL_OPTIONS
-}
 
 # 编译脚本 - 克隆源代码
 prepare_source_code() {
     ### 第一步：查询版本 ###
     clear
     echo -e "${BOLD}${BLUE_COLOR}■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
-    echo -e "${BOLD}${WHITE}                   准备源代码 [1/4]${RESET}"
+    echo -e "${BOLD}${WHITE}                   准备源代码 [1/5]${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
     echo ""    
     echo -e "  ${BOLD}${CYAN_COLOR}⟳${RESET} ${BOLD}查询最新 OpenWRT 版本${RESET}"
@@ -156,7 +152,7 @@ prepare_source_code() {
     ### 第二步：克隆代码 ###
     clear
     echo -e "${BOLD}${BLUE_COLOR}■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
-    echo -e "${BOLD}${WHITE}                   克隆源代码 [2/4]${RESET}"
+    echo -e "${BOLD}${WHITE}                   克隆源代码 [2/5]${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
     echo ""
     
@@ -170,7 +166,7 @@ prepare_source_code() {
     echo -e "  ${BOLD}${CYAN_COLOR}⟳${RESET} ${BOLD}正在下载源代码，请稍候...${RESET}"
     
     # 克隆源代码（隐藏所有错误输出）
-    if git -c advice.detachedHead=false clone --depth=1 --branch "v$tag_version" --single-branch --quiet https://github.com/openwrt/openwrt && cd openwrt 2>/dev/null; then
+    if git -c advice.detachedHead=false clone --depth=1 --branch "v$tag_version" --single-branch --quiet https://github.com/openwrt/openwrt 2>/dev/null; then
         echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
         echo -e "  ${BOLD}${GREEN_COLOR}✓${RESET} ${BOLD}源代码克隆成功${RESET}"
         echo -e "  ${BOLD}${YELLOW_COLOR}➤${RESET} ${BOLD}存储位置: ${GREEN_COLOR}$(pwd)/openwrt${RESET}"
@@ -185,13 +181,14 @@ prepare_source_code() {
     ### 第三步：更新 feeds.conf.default ###
     clear
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
-    echo -e "${BOLD}${WHITE}                   更新 feeds.conf.default [3/4]${RESET}"
+    echo -e "${BOLD}${WHITE}                   更新 feeds.conf.default [3/5]${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
     echo ""
 
     echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 📁 目标文件: ${CYAN_COLOR}feeds.conf.default${RESET}"
     echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
     echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 🔄 正在更新软件源配置...${RESET}"
+    cd openwrt && curl -Os $mirror/openwrt/patch/key.tar.gz && tar zxf key.tar.gz && rm -f key.tar.gz
     sed -i 's#^src-git packages .*#src-git packages https://github.com/openwrt/packages.git;openwrt-24.10#' feeds.conf.default
     sed -i 's#^src-git luci .*#src-git luci https://github.com/openwrt/luci.git;openwrt-24.10#' feeds.conf.default
     sed -i 's#^src-git routing .*#src-git routing https://github.com/openwrt/routing.git;openwrt-24.10#' feeds.conf.default
@@ -204,7 +201,7 @@ prepare_source_code() {
     ### 第四步：更新和安装 feeds ###
     clear
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
-    echo -e "${BOLD}${WHITE}                   更新和安装 Feeds [4/4]${RESET}"
+    echo -e "${BOLD}${WHITE}                   更新和安装 Feeds [4/5]${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
     echo ""
 
@@ -254,6 +251,14 @@ prepare_source_code() {
     echo -e "  ${BOLD}${GREEN_COLOR}✓${RESET} ${BOLD}Feeds 更新和安装完成${RESET}"
     echo -e "  ${BOLD}${YELLOW_COLOR}➤${RESET} ${BOLD}所有软件包源已就绪，可以开始配置编译${RESET}"
     echo ""
+
+    ### 第五步：更新 feeds.conf.default ###
+    clear
+    echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
+    echo -e "${BOLD}${WHITE}                   更新 feeds.conf.default [3/5]${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
+    echo ""
+    
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■${RESET}"
     echo -e "${BOLD}${GREEN_COLOR}                   源代码准备阶段完成！${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■${RESET}"
