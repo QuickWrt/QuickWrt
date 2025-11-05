@@ -4,168 +4,299 @@
 # Enable compiler optimizations at O2 level for enhanced performance and efficiency
 sed -i 's/Os/O2/g' include/target.mk
 
-# Integrates UPX toolchain support for executable compression.
-patch -p1 < ../OpenBox/generic-24.10/0001-tools-add-upx-tools.patch
+# Rockchip - rkbin & u-boot
+rm -rf package/boot/rkbin package/boot/uboot-rockchip package/boot/arm-trusted-firmware-rockchip
+git clone -b openwrt-24.10 https://$git_name:$git_password@gitea.kejizero.xyz/zhao/uboot-rockchip package/boot/uboot-rockchip
+git clone -b openwrt-24.10 https://$git_name:$git_password@gitea.kejizero.xyz/zhao/arm-trusted-firmware-rockchip package/boot/arm-trusted-firmware-rockchip
 
-# Enables firmware-wide UPX compression for reduced binary footprint.
-patch -p1 < ../OpenBox/generic-24.10/0002-rootfs-add-upx-compression-support.patch
+# Generic Patch
+curl -s $mirror/openwrt/patch/generic-24.10/0001-kernel-update-Config-kernel.in-for-Linux-6.12-support.patch | patch -p1
+curl -s $mirror/openwrt/patch/generic-24.10/0001-tools-add-upx-tools.patch | patch -p1
+curl -s $mirror/openwrt/patch/generic-24.10/0002-rootfs-add-upx-compression-support.patch | patch -p1
+curl -s $mirror/openwrt/patch/generic-24.10/0003-rootfs-add-r-w-permissions-for-UCI-configuration-fil.patch | patch -p1
+curl -s $mirror/openwrt/patch/generic-24.10/0004-rootfs-Add-support-for-local-kmod-installation-sourc.patch | patch -p1
+curl -s $mirror/openwrt/patch/generic-24.10/0013-kernel-add-olddefconfig-before-compilemodules.patch | patch -p1
 
-# Grants persistent read/write access to UCI config files.
-patch -p1 < ../OpenBox/generic-24.10/0003-rootfs-add-r-w-permissions-for-UCI-configuration-fil.patch
+# Dwarves 1.25
+rm -rf tools/dwarves
+git clone https://$github/sbwml/tools_dwarves tools/dwarves
 
-# Facilitates local kmod installation from custom sources.
-patch -p1 < ../OpenBox/generic-24.10/0004-rootfs-Add-support-for-local-kmod-installation-sourc.patch
+# X86 - disable mitigations
+sed -i 's/noinitrd/noinitrd mitigations=off/g' target/linux/x86/image/grub-efi.cfg
 
-# Kernel Vermagic Handling（Extracts the HASH from kernel metadata, computes its MD5 checksum,and stores it in the .vermagic file to ensure build consistency and module compatibility）
-sed -ie 's/^\(.\).*vermagic$/\1cp $(TOPDIR)\/.vermagic $(LINUX_DIR)\/.vermagic/' include/kernel-defaults.mk
-grep HASH include/kernel-6.6 | awk -F'HASH-' '{print $2}' | awk '{print $1}' | md5sum | awk '{print $1}' > .vermagic
-
-# Kernel Version Configuration: apply a specific video module patch to the kernel source to enhance multimedia support
-cp -rf ../OpenBox/kernel-6.6/kernel/0001-linux-module-video.patch ./package/0001-linux-module-video.patch
-git apply package/0001-linux-module-video.patch
-rm -rf package/0001-linux-module-video.patch
-
-# Rust Build Fix: disable CI LLVM to prevent compilation errors
-sed -i 's/ci-llvm=true/ci-llvm=false/g' feeds/packages/lang/rust/Makefile
-
-### FW4 ###
-# Integrate custom Firewall4 with extended nft command support
-cp -rf ../OpenBox/firewall4/Makefile ./package/network/config/firewall4/Makefile
-sed -i 's|$(PROJECT_GIT)/project|https://github.com/openwrt|g' package/network/config/firewall4/Makefile
-mkdir -p package/network/config/firewall4/patches
-patch -p1 < ../OpenBox/firewall4/100-openwrt-firewall4-add-custom-nft-command-support.patch
-cp -rf ../OpenBox/firewall4/firewall4_patches package/network/config/firewall4/patches/
-
-# libnftnl patches
-# Apply required patches to libnftnl library to enhance nftables functionality
-mkdir -p package/libs/libnftnl/patches
-cp -f ../OpenBox/firewall4/libnftnl/*.patch ./package/libs/libnftnl/patches/
-
-# nftables patches
-# Integrate customized nftables patches for improved firewall capabilities
-mkdir -p package/network/utils/nftables/patches
-cp -f ../OpenBox/firewall4/nftables/*.patch ./package/network/utils/nftables/patches/
-
-# Kernel patches
-# Apply architecture-specific and network kernel patches for optimized performance
-cp -f ../OpenBox/kernel-6.6/btf/*.patch ./target/linux/generic/hack-6.6/
-cp -f ../OpenBox/kernel-6.6/arm/*.patch ./target/linux/generic/hack-6.6/
-cp -f ../OpenBox/kernel-6.6/net/*.patch ./target/linux/generic/hack-6.6/
-
-# FullCone NAT module
-# Clone the FullCone NAT module for enhanced network address translation
-git clone https://git.cooluc.com/sbwml/nft-fullcone package/new/nft-fullcone
-
-# IPv6 NAT support
-# Integrate IPv6 NAT packages for dual-stack environments
-git clone https://github.com/sbwml/packages_new_nat6 package/new/nat6
-
-# Natflow support
-# Integrate Natflow for dynamic network flow management
-git clone https://github.com/sbwml/package_new_natflow package/new/natflow
-
-# Shortcut Forwarding Engine
-# Include Shortcut Forwarding Engine to accelerate packet forwarding
-git clone https://git.cooluc.com/sbwml/shortcut-fe package/new/shortcut-fe
-
-# BBRv3 congestion control
-# Apply BBRv3 kernel backports for improved network throughput and latency
-cp -rf ../OpenBox/kernel-6.6/bbr3/* ./target/linux/generic/backport-6.6/
-
-# LRNG (Linux Random Number Generator)
-# Apply LRNG kernel patches and enable secure random number generation features
-cp -rf ../OpenBox/kernel-6.6/lrng/* ./target/linux/generic/hack-6.6/
-echo '
-# CONFIG_RANDOM_DEFAULT_IMPL is not set
-CONFIG_LRNG=y
-CONFIG_LRNG_DEV_IF=y
-# CONFIG_LRNG_IRQ is not set
-CONFIG_LRNG_JENT=y
-CONFIG_LRNG_CPU=y
-# CONFIG_LRNG_SCHED is not set
-CONFIG_LRNG_SELFTEST=y
-# CONFIG_LRNG_SELFTEST_PANIC is not set
-' >>./target/linux/generic/config-6.6
-
-# Kernel PPP performance patches
-wget https://github.com/torvalds/linux/commit/95d0d094ba26432ec467e2260f4bf553053f1f8f.patch -O target/linux/generic/pending-6.6/999-1-95d0d09.patch
-wget https://github.com/torvalds/linux/commit/1a3e9b7a6b09e8ab3d2af019e4a392622685855e.patch -O target/linux/generic/pending-6.6/999-2-1a3e9b7.patch
-wget https://github.com/torvalds/linux/commit/7eebd219feda99df8292a97faff895a5da8159d6.patch -O target/linux/generic/pending-6.6/999-3-7eebd21.patch
-
-# PPP fix applied directly from ImmortalWrt upstream commit
-wget -qO - https://github.com/immortalwrt/immortalwrt/commit/9d852a05bd50b1c332301eecbcac1fa71be637d6.patch | patch -p1
-
-### Other Kernel Hacks ###
-# Apply the kernel default configuration for enhanced stability and consistency
-patch -p1 < ../OpenBox/kernel-6.6/kernel/0003-include-kernel-defaults.mk.patch
-
-# Apply IGC network driver fixes to ensure reliable Ethernet performance
-cp -rf ../OpenBox/kernel-6.6/igc-fix/* ./target/linux/x86/patches-6.6/
-
-# Apply BTF (BPF Type Format) enhancements to improve kernel introspection and debugging
-cp -rf ../OpenBox/kernel-6.6/btf/* ./target/linux/generic/hack-6.6/
-
-### Personalized modifications ###
-# Update LAN gateway, branding, and banner to custom ZeroWrt settings
+# Default LAN IP
 sed -i "s/192.168.1.1/10.0.0.1/g" package/base-files/files/bin/config_generate
 
+# Default Hostname
 sed -i 's/OpenWrt/ZeroWrt/' package/base-files/files/bin/config_generate
 
-cp -rf ../OpenBox/doc/base-files/etc/banner ./package/base-files/files/etc/banner
+# Default Password
+default_password=$(openssl passwd -5 password)
+sed -i "s|^root:[^:]*:|root:${default_password}:|" package/base-files/files/etc/shadow
 
-# Luci modules enhancements for Firewall, NAT, and FullCone support
+# Use nginx instead of uhttpd
+sed -i 's/+uhttpd /+luci-nginx /g' feeds/luci/collections/luci/Makefile
+sed -i 's/+uhttpd-mod-ubus //' feeds/luci/collections/luci/Makefile
+sed -i 's/+uhttpd /+luci-nginx /g' feeds/luci/collections/luci-light/Makefile
+sed -i "s/+luci /+luci-nginx /g" feeds/luci/collections/luci-ssl-openssl/Makefile
+sed -i "s/+luci /+luci-nginx /g" feeds/luci/collections/luci-ssl/Makefile
+sed -i 's/+uhttpd +uhttpd-mod-ubus /+luci-nginx /g' feeds/packages/net/wg-installer/Makefile
+sed -i '/uhttpd-mod-ubus/d' feeds/luci/collections/luci-light/Makefile
+sed -i 's/+luci-nginx \\$/+luci-nginx/' feeds/luci/collections/luci-light/Makefile
+
+# Libubox
+sed -i '/TARGET_CFLAGS/ s/$/ -Os/' package/libs/libubox/Makefile
+
+# Fstools
+rm -rf package/system/fstools
+git clone https://$github/sbwml/package_system_fstools -b openwrt-24.10 package/system/fstools
+
+# Util-linux
+rm -rf package/utils/util-linux
+git clone https://$gitea/zhao/package_utils_util-linux -b openwrt-24.10 package/utils/util-linux
+
+# Shortcut Forwarding Engine
+git clone https://$gitea/zhao/shortcut-fe package/new/shortcut-fe
+
+### Patch FireWall 4 ###
+# firewall4
+sed -i 's|$(PROJECT_GIT)/project|https://github.com/openwrt|g' package/network/config/firewall4/Makefile
+mkdir -p package/network/config/firewall4/patches
+# fix ct status dnat
+curl -s $mirror/openwrt/patch/firewall4/firewall4_patches/990-unconditionally-allow-ct-status-dnat.patch > package/network/config/firewall4/patches/990-unconditionally-allow-ct-status-dnat.patch
+# fullcone
+curl -s $mirror/openwrt/patch/firewall4/firewall4_patches/999-01-firewall4-add-fullcone-support.patch > package/network/config/firewall4/patches/999-01-firewall4-add-fullcone-support.patch
+# bcm fullcone
+curl -s $mirror/openwrt/patch/firewall4/firewall4_patches/999-02-firewall4-add-bcm-fullconenat-support.patch > package/network/config/firewall4/patches/999-02-firewall4-add-bcm-fullconenat-support.patch
+# kernel version
+curl -s $mirror/openwrt/patch/firewall4/firewall4_patches/002-fix-fw4.uc-adept-kernel-version-type-of-x.x.patch > package/network/config/firewall4/patches/002-fix-fw4.uc-adept-kernel-version-type-of-x.x.patch
+# fix flow offload
+curl -s $mirror/openwrt/patch/firewall4/firewall4_patches/001-fix-fw4-flow-offload.patch > package/network/config/firewall4/patches/001-fix-fw4-flow-offload.patch
+# add custom nft command support
+curl -s $mirror/openwrt/patch/firewall4/100-openwrt-firewall4-add-custom-nft-command-support.patch | patch -p1
+# libnftnl
+mkdir -p package/libs/libnftnl/patches
+curl -s $mirror/openwrt/patch/firewall4/libnftnl/0001-libnftnl-add-fullcone-expression-support.patch > package/libs/libnftnl/patches/0001-libnftnl-add-fullcone-expression-support.patch
+curl -s $mirror/openwrt/patch/firewall4/libnftnl/0002-libnftnl-add-brcm-fullcone-support.patch > package/libs/libnftnl/patches/0002-libnftnl-add-brcm-fullcone-support.patch
+# nftables
+mkdir -p package/network/utils/nftables/patches
+curl -s $mirror/openwrt/patch/firewall4/nftables/0001-nftables-add-fullcone-expression-support.patch > package/network/utils/nftables/patches/0001-nftables-add-fullcone-expression-support.patch
+curl -s $mirror/openwrt/patch/firewall4/nftables/0002-nftables-add-brcm-fullconenat-support.patch > package/network/utils/nftables/patches/0002-nftables-add-brcm-fullconenat-support.patch
+curl -s $mirror/openwrt/patch/firewall4/nftables/0003-drop-rej-file.patch > package/network/utils/nftables/patches/0003-drop-rej-file.patch
+
+# FullCone module
+git clone https://$gitea/zhao/nft-fullcone package/new/nft-fullcone
+
+# IPv6 NAT
+git clone https://$github/sbwml/packages_new_nat6 package/new/nat6
+
+# natflow
+git clone https://$github/sbwml/package_new_natflow package/new/natflow
+
+# Patch Luci add nft_fullcone/bcm_fullcone & shortcut-fe & natflow & ipv6-nat & custom nft command option
 pushd feeds/luci
-patch -p1 <../../../OpenBox/firewall4/luci-24.10/0001-luci-app-firewall-add-nft-fullcone-and-bcm-fullcone-.patch
-patch -p1 <../../../OpenBox/firewall4/luci-24.10/0002-luci-app-firewall-add-shortcut-fe-option.patch
-patch -p1 <../../../OpenBox/firewall4/luci-24.10/0003-luci-app-firewall-add-ipv6-nat-option.patch
-patch -p1 <../../../OpenBox/firewall4/luci-24.10/0004-luci-add-firewall-add-custom-nft-rule-support.patch
-patch -p1 <../../../OpenBox/firewall4/luci-24.10/0005-luci-app-firewall-add-natflow-offload-support.patch
-patch -p1 <../../../OpenBox/firewall4/luci-24.10/0006-luci-app-firewall-enable-hardware-offload-only-on-de.patch
-patch -p1 <../../../OpenBox/firewall4/luci-24.10/0007-luci-app-firewall-add-fullcone6-option-for-nftables-.patch
+    curl -s $mirror/openwrt/patch/firewall4/luci-24.10/0001-luci-app-firewall-add-nft-fullcone-and-bcm-fullcone-.patch | patch -p1
+    curl -s $mirror/openwrt/patch/firewall4/luci-24.10/0002-luci-app-firewall-add-shortcut-fe-option.patch | patch -p1
+    curl -s $mirror/openwrt/patch/firewall4/luci-24.10/0003-luci-app-firewall-add-ipv6-nat-option.patch | patch -p1
+    curl -s $mirror/openwrt/patch/firewall4/luci-24.10/0004-luci-add-firewall-add-custom-nft-rule-support.patch | patch -p1
+    curl -s $mirror/openwrt/patch/firewall4/luci-24.10/0005-luci-app-firewall-add-natflow-offload-support.patch | patch -p1
+    curl -s $mirror/openwrt/patch/firewall4/luci-24.10/0006-luci-app-firewall-enable-hardware-offload-only-on-de.patch | patch -p1
+    curl -s $mirror/openwrt/patch/firewall4/luci-24.10/0007-luci-app-firewall-add-fullcone6-option-for-nftables-.patch | patch -p1
 popd
 
-# Additional Luci enhancements for system status, modal dialogs, and storage display optimizations
-pushd feeds/luci
-patch -p1 <../../../OpenBox/luci/0001-luci-mod-system-add-modal-overlay-dialog-to-reboot.patch
-patch -p1 <../../../OpenBox/luci/0002-luci-mod-status-displays-actual-process-memory-usage.patch
-patch -p1 <../../../OpenBox/luci/0003-luci-mod-status-storage-index-applicable-only-to-val.patch
-patch -p1 <../../../OpenBox/luci/0004-luci-mod-status-firewall-disable-legacy-firewall-rul.patch
-patch -p1 <../../../OpenBox/luci/0005-luci-mod-system-add-refresh-interval-setting.patch
-patch -p1 <../../../OpenBox/luci/0006-luci-mod-system-mounts-add-docker-directory-mount-po.patch
-patch -p1 <../../../OpenBox/luci/0007-luci-mod-system-add-ucitrack-luci-mod-system-zram.js.patch
+# openssl
+OPENSSL_VERSION=3.0.17
+OPENSSL_HASH=dfdd77e4ea1b57ff3a6dbde6b0bdc3f31db5ac99e7fdd4eaf9e1fbb6ec2db8ce
+sed -ri "s/(PKG_VERSION:=)[^\"]*/\1$OPENSSL_VERSION/;s/(PKG_HASH:=)[^\"]*/\1$OPENSSL_HASH/" package/libs/openssl/Makefile
+
+# openssl - quictls
+pushd package/libs/openssl/patches
+    curl -sO $mirror/openwrt/patch/openssl/quic/0001-QUIC-Add-support-for-BoringSSL-QUIC-APIs.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0002-QUIC-New-method-to-get-QUIC-secret-length.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0003-QUIC-Make-temp-secret-names-less-confusing.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0004-QUIC-Move-QUIC-transport-params-to-encrypted-extensi.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0005-QUIC-Use-proper-secrets-for-handshake.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0006-QUIC-Handle-partial-handshake-messages.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0007-QUIC-Fix-quic_transport-constructors-parsers.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0008-QUIC-Reset-init-state-in-SSL_process_quic_post_hands.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0009-QUIC-Don-t-process-an-incomplete-message.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0010-QUIC-Quick-fix-s2c-to-c2s-for-early-secret.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0011-QUIC-Add-client-early-traffic-secret-storage.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0012-QUIC-Add-OPENSSL_NO_QUIC-wrapper.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0013-QUIC-Correctly-disable-middlebox-compat.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0014-QUIC-Move-QUIC-code-out-of-tls13_change_cipher_state.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0015-QUIC-Tweeks-to-quic_change_cipher_state.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0016-QUIC-Add-support-for-more-secrets.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0017-QUIC-Fix-resumption-secret.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0018-QUIC-Handle-EndOfEarlyData-and-MaxEarlyData.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0019-QUIC-Fall-through-for-0RTT.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0020-QUIC-Some-cleanup-for-the-main-QUIC-changes.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0021-QUIC-Prevent-KeyUpdate-for-QUIC.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0022-QUIC-Test-KeyUpdate-rejection.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0023-QUIC-Buffer-all-provided-quic-data.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0024-QUIC-Enforce-consistent-encryption-level-for-handsha.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0025-QUIC-add-v1-quic_transport_parameters.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0026-QUIC-return-success-when-no-post-handshake-data.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0027-QUIC-__owur-makes-no-sense-for-void-return-values.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0028-QUIC-remove-SSL_R_BAD_DATA_LENGTH-unused.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0029-QUIC-SSLerr-ERR_raise-ERR_LIB_SSL.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0030-QUIC-Add-compile-run-time-checking-for-QUIC.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0031-QUIC-Add-early-data-support.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0032-QUIC-Make-SSL_provide_quic_data-accept-0-length-data.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0033-QUIC-Process-multiple-post-handshake-messages-in-a-s.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0034-QUIC-Fix-CI.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0035-QUIC-Break-up-header-body-processing.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0036-QUIC-Don-t-muck-with-FIPS-checksums.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0037-QUIC-Update-RFC-references.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0038-QUIC-revert-white-space-change.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0039-QUIC-use-SSL_IS_QUIC-in-more-places.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0040-QUIC-Error-when-non-empty-session_id-in-CH.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0041-QUIC-Update-SSL_clear-to-clear-quic-data.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0042-QUIC-Better-SSL_clear.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0043-QUIC-Fix-extension-test.patch
+    curl -sO $mirror/openwrt/patch/openssl/quic/0044-QUIC-Update-metadata-version.patch
 popd
 
-# OPKG patches integration
-mkdir -p package/system/opkg/patches
-cp -rf ../OpenBox/opkg/* ./package/system/opkg/patches/
+# openssl benchmarks
+pushd package/libs/openssl/patches
+    curl -sO $mirror/openwrt/patch/openssl/901-Revert-speed-Pass-IV-to-EVP_CipherInit_ex-for-evp-ru.patch
+    curl -sO $mirror/openwrt/patch/openssl/902-Revert-apps-speed.c-Fix-the-benchmarking-for-AEAD-ci.patch
+popd
 
-# TTYD menu and logging enhancements
+# openssl urandom
+sed -i "/-openwrt/iOPENSSL_OPTIONS += enable-ktls '-DDEVRANDOM=\"\\\\\"/dev/urandom\\\\\"\"\'\n" package/libs/openssl/Makefile
+
+# nghttp3
+rm -rf feeds/packages/libs/nghttp3
+git clone https://$github/sbwml/package_libs_nghttp3 package/libs/nghttp3
+
+# ngtcp2
+rm -rf feeds/packages/libs/ngtcp2
+git clone https://$github/sbwml/package_libs_ngtcp2 package/libs/ngtcp2
+
+# curl - fix passwall `time_pretransfer` check
+rm -rf feeds/packages/net/curl
+git clone https://$github/sbwml/feeds_packages_net_curl feeds/packages/net/curl
+
+# Docker
+rm -rf feeds/luci/applications/luci-app-dockerman
+git clone https://$gitea/zhao/luci-app-dockerman -b openwrt-24.10 feeds/luci/applications/luci-app-dockerman
+rm -rf feeds/packages/utils/{docker,dockerd,containerd,runc}
+git clone https://$github/sbwml/packages_utils_docker feeds/packages/utils/docker
+git clone https://$github/sbwml/packages_utils_dockerd feeds/packages/utils/dockerd
+git clone https://$github/sbwml/packages_utils_containerd feeds/packages/utils/containerd
+git clone https://$github/sbwml/packages_utils_runc feeds/packages/utils/runc
+
+# cgroupfs-mount
+# fix unmount hierarchical mount
+pushd feeds/packages
+    curl -s $mirror/openwrt/patch/cgroupfs-mount/0001-fix-cgroupfs-mount.patch | patch -p1
+popd
+# mount cgroup v2 hierarchy to /sys/fs/cgroup/cgroup2
+mkdir -p feeds/packages/utils/cgroupfs-mount/patches
+curl -s $mirror/openwrt/patch/cgroupfs-mount/900-mount-cgroup-v2-hierarchy-to-sys-fs-cgroup-cgroup2.patch > feeds/packages/utils/cgroupfs-mount/patches/900-mount-cgroup-v2-hierarchy-to-sys-fs-cgroup-cgroup2.patch
+curl -s $mirror/openwrt/patch/cgroupfs-mount/901-fix-cgroupfs-umount.patch > feeds/packages/utils/cgroupfs-mount/patches/901-fix-cgroupfs-umount.patch
+# docker systemd support
+curl -s $mirror/openwrt/patch/cgroupfs-mount/902-mount-sys-fs-cgroup-systemd-for-docker-systemd-suppo.patch > feeds/packages/utils/cgroupfs-mount/patches/902-mount-sys-fs-cgroup-systemd-for-docker-systemd-suppo.patch
+
+# procps-ng - top
+sed -i 's/enable-skill/enable-skill --disable-modern-top/g' feeds/packages/utils/procps-ng/Makefile
+
+# TTYD
 sed -i 's/services/system/g' feeds/luci/applications/luci-app-ttyd/root/usr/share/luci/menu.d/luci-app-ttyd.json
 sed -i '3 a\\t\t"order": 50,' feeds/luci/applications/luci-app-ttyd/root/usr/share/luci/menu.d/luci-app-ttyd.json
 sed -i 's/procd_set_param stdout 1/procd_set_param stdout 0/g' feeds/packages/utils/ttyd/files/ttyd.init
 sed -i 's/procd_set_param stderr 1/procd_set_param stderr 0/g' feeds/packages/utils/ttyd/files/ttyd.init
 
-# Shell profile and PATH customization for enhanced UX
+# UPnP
+rm -rf feeds/{packages/net/miniupnpd,luci/applications/luci-app-upnp}
+git clone https://$gitea/zhao/miniupnpd feeds/packages/net/miniupnpd -b v2.3.9
+git clone https://$gitea/zhao/luci-app-upnp feeds/luci/applications/luci-app-upnp -b openwrt-24.10
+
+# nginx - latest version
+rm -rf feeds/packages/net/nginx
+git clone https://$github/sbwml/feeds_packages_net_nginx feeds/packages/net/nginx -b openwrt-24.10
+sed -i 's/procd_set_param stdout 1/procd_set_param stdout 0/g;s/procd_set_param stderr 1/procd_set_param stderr 0/g' feeds/packages/net/nginx/files/nginx.init
+
+# nginx - ubus
+sed -i 's/ubus_parallel_req 2/ubus_parallel_req 6/g' feeds/packages/net/nginx/files-luci-support/60_nginx-luci-support
+sed -i '/ubus_parallel_req/a\        ubus_script_timeout 300;' feeds/packages/net/nginx/files-luci-support/60_nginx-luci-support
+
+# nginx - config
+curl -s $mirror/openwrt/nginx/luci.locations > feeds/packages/net/nginx/files-luci-support/luci.locations
+curl -s $mirror/openwrt/nginx/uci.conf.template > feeds/packages/net/nginx-util/files/uci.conf.template
+
+# opkg
+mkdir -p package/system/opkg/patches
+curl -s $mirror/openwrt/patch/opkg/900-opkg-download-disable-hsts.patch > package/system/opkg/patches/900-opkg-download-disable-hsts.patch
+curl -s $mirror/openwrt/patch/opkg/901-libopkg-opkg_install-copy-conffiles-to-the-system-co.patch > package/system/opkg/patches/901-libopkg-opkg_install-copy-conffiles-to-the-system-co.patch
+
+# uwsgi - fix timeout
+sed -i '$a cgi-timeout = 600' feeds/packages/net/uwsgi/files-luci-support/luci-*.ini
+sed -i '/limit-as/c\limit-as = 5000' feeds/packages/net/uwsgi/files-luci-support/luci-webui.ini
+# disable error log
+sed -i "s/procd_set_param stderr 1/procd_set_param stderr 0/g" feeds/packages/net/uwsgi/files/uwsgi.init
+
+# uwsgi - performance
+sed -i 's/threads = 1/threads = 2/g' feeds/packages/net/uwsgi/files-luci-support/luci-webui.ini
+sed -i 's/processes = 3/processes = 4/g' feeds/packages/net/uwsgi/files-luci-support/luci-webui.ini
+sed -i 's/cheaper = 1/cheaper = 2/g' feeds/packages/net/uwsgi/files-luci-support/luci-webui.ini
+
+# rpcd - fix timeout
+sed -i 's/option timeout 30/option timeout 60/g' package/system/rpcd/files/rpcd.config
+sed -i 's#20) \* 1000#60) \* 1000#g' feeds/luci/modules/luci-base/htdocs/luci-static/resources/rpc.js
+
+# luci-mod extra
+pushd feeds/luci
+    curl -s $mirror/openwrt/patch/luci/0001-luci-mod-system-add-modal-overlay-dialog-to-reboot.patch | patch -p1
+    curl -s $mirror/openwrt/patch/luci/0002-luci-mod-status-displays-actual-process-memory-usage.patch | patch -p1
+    curl -s $mirror/openwrt/patch/luci/0003-luci-mod-status-storage-index-applicable-only-to-val.patch | patch -p1
+    curl -s $mirror/openwrt/patch/luci/0004-luci-mod-status-firewall-disable-legacy-firewall-rul.patch | patch -p1
+    curl -s $mirror/openwrt/patch/luci/0005-luci-mod-system-add-refresh-interval-setting.patch | patch -p1
+    curl -s $mirror/openwrt/patch/luci/0006-luci-mod-system-mounts-add-docker-directory-mount-po.patch | patch -p1
+    curl -s $mirror/openwrt/patch/luci/0007-luci-mod-system-add-ucitrack-luci-mod-system-zram.js.patch | patch -p1
+popd
+
+# Luci diagnostics.js
+sed -i "s/openwrt.org/www.qq.com/g" feeds/luci/modules/luci-mod-network/htdocs/luci-static/resources/view/network/diagnostics.js
+
+# luci-compat - remove extra line breaks from description
+sed -i '/<br \/>/d' feeds/luci/modules/luci-compat/luasrc/view/cbi/full_valuefooter.htm
+
+# urngd - 2020-01-21
+rm -rf package/system/urngd
+git clone https://$github/sbwml/package_system_urngd package/system/urngd
+
+# zlib - 1.3
+ZLIB_VERSION=1.3.1
+ZLIB_HASH=38ef96b8dfe510d42707d9c781877914792541133e1870841463bfa73f883e32
+sed -ri "s/(PKG_VERSION:=)[^\"]*/\1$ZLIB_VERSION/;s/(PKG_HASH:=)[^\"]*/\1$ZLIB_HASH/" package/libs/zlib/Makefile
+
+# profile
 sed -i 's#\\u@\\h:\\w\\\$#\\[\\e[32;1m\\][\\u@\\h\\[\\e[0m\\] \\[\\033[01;34m\\]\\W\\[\\033[00m\\]\\[\\e[32;1m\\]]\\[\\e[0m\\]\\\$#g' package/base-files/files/etc/profile
 sed -ri 's/(export PATH=")[^"]*/\1%PATH%:\/opt\/bin:\/opt\/sbin:\/opt\/usr\/bin:\/opt\/usr\/sbin/' package/base-files/files/etc/profile
 sed -i '/ENV/i\export TERM=xterm-color' package/base-files/files/etc/profile
 
-# Default shell set to bash with HISTCONTROL optimization
+# bash
 sed -i 's#ash#bash#g' package/base-files/files/etc/passwd
 sed -i '\#export ENV=/etc/shinit#a export HISTCONTROL=ignoredups' package/base-files/files/etc/profile
+mkdir -p files/root
+curl -so files/root/.bash_profile $mirror/openwrt/files/root/.bash_profile
+curl -so files/root/.bashrc $mirror/openwrt/files/root/.bashrc
 
-# Copy custom files with execution permissions
-mkdir files
-cp -rf ../OpenBox/files/* ./files/
-chmod -R +x files
+# rootfs files
+mkdir -p files/etc/sysctl.d
+curl -so files/etc/sysctl.d/10-default.conf $mirror/openwrt/files/etc/sysctl.d/10-default.conf
+curl -so files/etc/sysctl.d/15-vm-swappiness.conf $mirror/openwrt/files/etc/sysctl.d/15-vm-swappiness.conf
+curl -so files/etc/sysctl.d/16-udp-buffer-size.conf $mirror/openwrt/files/etc/sysctl.d/16-udp-buffer-size.conf
 
-# NTP server customization for faster and more reliable time sync
+# NTP
 sed -i 's/0.openwrt.pool.ntp.org/ntp1.aliyun.com/g' package/base-files/files/bin/config_generate
 sed -i 's/1.openwrt.pool.ntp.org/ntp2.aliyun.com/g' package/base-files/files/bin/config_generate
 sed -i 's/2.openwrt.pool.ntp.org/time1.cloud.tencent.com/g' package/base-files/files/bin/config_generate
 sed -i 's/3.openwrt.pool.ntp.org/time2.cloud.tencent.com/g' package/base-files/files/bin/config_generate
 
-# Luci-theme-bootstrap font-size enhancement for better readability
+# luci-theme-bootstrap
 sed -i 's/font-size: 13px/font-size: 14px/g' feeds/luci/themes/luci-theme-bootstrap/htdocs/luci-static/bootstrap/cascade.css
 sed -i 's/9.75px/10.75px/g' feeds/luci/themes/luci-theme-bootstrap/htdocs/luci-static/bootstrap/cascade.css
 
