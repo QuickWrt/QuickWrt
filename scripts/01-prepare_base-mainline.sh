@@ -5,7 +5,7 @@ git clone https://$github/sbwml/autocore-arm -b openwrt-24.10 package/system/aut
 
 # rockchip - target - 6.12
 rm -rf target/linux/rockchip
-git clone -b openwrt-24.10 https://$git_name:$git_password@$gitea/zhao/target_linux_rockchip target/linux/rockchip
+git clone -b openwrt-24.10 https://zhao:$git_password@$gitea/zhao/target_linux_rockchip target/linux/rockchip
 
 # bpf-headers - 6.12
 sed -ri "s/(PKG_PATCHVER:=)[^\"]*/\16.12/" package/kernel/bpf-headers/Makefile
@@ -31,7 +31,7 @@ grep HASH include/kernel-6.12 | awk -F'HASH-' '{print $2}' | awk '{print $1}' | 
 
 # generic - target - 6.12
 rm -rf target/linux/generic
-git clone -b openwrt-24.10 https://$git_name:$git_password@$gitea/zhao/target_linux_generic target/linux/generic
+git clone -b openwrt-24.10 https://zhao:$git_password@$gitea/zhao/target_linux_generic target/linux/generic
 
 # kernel modules
 rm -rf package/kernel/linux
