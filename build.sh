@@ -38,6 +38,7 @@ case "$2" in
         ;;
 esac
 
+# 密码验证
 validate_password() {
     clear
     local attempts=0
@@ -85,6 +86,7 @@ validate_password() {
     done
 }
 
+# 打印
 show_banner() {
     clear
     echo -e ""
@@ -116,10 +118,86 @@ show_banner() {
     echo -e ""
 }
 
+# 初始化构建环境
+setup_build_environment() {
+    if [[ "$(id -u)" == "0" ]]; then
+        export FORCE_UNSAFE_CONFIGURE=1 FORCE=1
+        echo -e "${BOLD}${RED_COLOR}以 root 权限运行，已启用强制不安全配置${RESET}"
+    fi
+}
+
+# 设置下载进度条
+setup_curl_progress() {
+    if curl --help | grep -q progress-bar; then
+        CURL_OPTIONS="--progress-bar"
+    else
+        CURL_OPTIONS="--silent"
+    fi
+    export CURL_OPTIONS
+}
+
+# 编译脚本 - 克隆源代码
+prepare_source_code() {
+    ### 第一步：查询版本 ###
+    clear
+    echo -e "${BOLD}${BLUE_COLOR}■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
+    echo -e "${BOLD}${WHITE}                   准备源代码 [1/4]${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
+    echo ""    
+    echo -e "  ${BOLD}${CYAN_COLOR}⟳${RESET} ${BOLD}查询最新 OpenWRT 版本${RESET}"
+    
+    # 获取版本号
+    tag_version="$(curl -s https://github.com/openwrt/openwrt/tags | grep -Eo "v[0-9\.]+\-*r*c*[0-9]*.tar.gz" | sed -n '/[2-9][4-9]/p' | sed -n 1p | sed 's/v//g' | sed 's/.tar.gz//g')"
+    export tag_version="$tag_version"
+    
+    echo -e "  ${BOLD}${GREEN_COLOR}✓${RESET} ${BOLD}版本检测完成${RESET}"
+    echo -e "  ${BOLD}${YELLOW_COLOR}➤${RESET} ${BOLD}最新版本: ${GREEN_COLOR}$tag_version${RESET}"
+    echo ""
+
+    ### 第二步：克隆代码 ###
+    clear
+    echo -e "${BOLD}${BLUE_COLOR}■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
+    echo -e "${BOLD}${WHITE}                   克隆源代码 [2/4]${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
+    echo ""
+    
+    echo -e "  ${BOLD}${CYAN_COLOR}⟳${RESET} ${BOLD}开始克隆源代码仓库...${RESET}"
+    echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
+    echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 📦 仓库: ${CYAN_COLOR}https://github.com/openwrt/openwrt${RESET}"
+    echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 🏷️  版本: ${YELLOW_COLOR}v$tag_version${RESET}"
+    echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
+    
+    # 显示克隆进度
+    echo -e "  ${BOLD}${CYAN_COLOR}⟳${RESET} ${BOLD}正在下载源代码，请稍候...${RESET}"
+    
+    # 克隆源代码（隐藏所有错误输出）
+    if git -c advice.detachedHead=false clone --depth=1 --branch "v$tag_version" --single-branch --quiet https://github.com/openwrt/openwrt 2>/dev/null; then
+        echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
+        echo -e "  ${BOLD}${GREEN_COLOR}✓${RESET} ${BOLD}源代码克隆成功${RESET}"
+        echo -e "  ${BOLD}${YELLOW_COLOR}➤${RESET} ${BOLD}存储位置: ${GREEN_COLOR}$(pwd)/openwrt${RESET}"
+        echo -e "  ${BOLD}${YELLOW_COLOR}➤${RESET} ${BOLD}分支版本: ${GREEN_COLOR}v$tag_version${RESET}"
+    else
+        echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
+        echo -e "  ${BOLD}${RED_COLOR}✗${RESET} ${BOLD}源代码克隆失败${RESET}"
+        return 1
+    fi
+    echo ""
+
+    ### 第三步：更新 feeds.conf.default ###
+    clear
+    echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
+    echo -e "${BOLD}${WHITE}                   更新 feeds.conf.default [3/4]${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
+    echo ""
+}
+    
 # 主执行逻辑
 main() {
     validate_password
     show_banner
+    setup_build_environment
+    setup_curl_progress
+    prepare_source_code
 }
 
 main "$@"
