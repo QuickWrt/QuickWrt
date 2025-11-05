@@ -116,7 +116,7 @@ show_banner() {
     echo -e "${BOLD}${BLUE_COLOR}║${RESET} 🔧 构建开始: $(date '+%Y-%m-%d %H:%M:%S')                                 ${BOLD}${BLUE_COLOR}║${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}║${RESET} ⚡ 处理器核心: $cpu_cores 个                                              ${BOLD}${BLUE_COLOR}║${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}║${RESET} 🐧 系统用户: $(whoami)                                                ${BOLD}${BLUE_COLOR}║${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET} 🔬 GCC 版本: $gcc                                                          ${BOLD}${BLUE_COLOR}║${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}║${RESET} 🔬 GCC 版本: $gcc                                                  ${BOLD}${BLUE_COLOR}║${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}║${RESET} 🚀 编译模式: $build_mode                                            ${BOLD}${BLUE_COLOR}║${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}╚══════════════════════════════════════════════════════════════════╝${RESET}"
     echo -e ""
@@ -140,7 +140,6 @@ setup_curl_progress() {
 # 编译脚本 - 克隆源代码
 prepare_source_code() {
     ### 第一步：查询版本 ###
-    clear
     echo -e "${BOLD}${BLUE_COLOR}■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
     echo -e "${BOLD}${WHITE}                   准备源代码 [1/6]${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
@@ -156,7 +155,6 @@ prepare_source_code() {
     echo ""
 
     ### 第二步：克隆代码 ###
-    clear
     echo -e "${BOLD}${BLUE_COLOR}■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
     echo -e "${BOLD}${WHITE}                   克隆源代码 [2/6]${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
@@ -185,7 +183,6 @@ prepare_source_code() {
     echo ""
 
     ### 第三步：更新 feeds.conf.default ###
-    clear
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
     echo -e "${BOLD}${WHITE}                   更新 feeds.conf.default [3/6]${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
@@ -204,7 +201,6 @@ prepare_source_code() {
     echo ""
 
     ### 第四步：更新和安装 feeds ###
-    clear
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
     echo -e "${BOLD}${WHITE}                   更新和安装 Feeds [4/6]${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
@@ -258,7 +254,6 @@ prepare_source_code() {
     echo ""
 
     ### 第五步：更新密钥文件 ###
-    clear
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
     echo -e "${BOLD}${WHITE}                         更新密钥文件 [5/6]${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
@@ -305,7 +300,6 @@ prepare_source_code() {
     fi
 
     ### 第六步：执行构建脚本 ###
-    clear
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
     echo -e "${BOLD}${WHITE}                         执行构建脚本 [6/6]${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
@@ -329,7 +323,7 @@ prepare_source_code() {
     downloaded_count=0
     for script in "${scripts[@]}"; do
         echo -ne "  ${BOLD}${MAGENTA_COLOR}│   📥 ${CYAN_COLOR}$script${RESET}"
-        if curl -fs --connect-timeout 30 "$MIRROR/openwrt/scripts/$script" -o "$script" 2>/dev/null; then
+        if curl -fs --connect-timeout 30 "$mirror/openwrt/scripts/$script" -o "$script" 2>/dev/null; then
             echo -e " ${GREEN_COLOR}✅${RESET}"
             downloaded_count=$((downloaded_count + 1))
         else
