@@ -188,6 +188,76 @@ prepare_source_code() {
     echo -e "${BOLD}${WHITE}                   更新 feeds.conf.default [3/4]${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
     echo ""
+
+    echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 📁 目标文件: ${CYAN_COLOR}feeds.conf.default${RESET}"
+    echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
+    echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 🔄 正在更新软件源配置...${RESET}"
+    sed -i 's#^src-git packages .*#src-git packages https://github.com/openwrt/packages.git;openwrt-24.10#' feeds.conf.default
+    sed -i 's#^src-git luci .*#src-git luci https://github.com/openwrt/luci.git;openwrt-24.10#' feeds.conf.default
+    sed -i 's#^src-git routing .*#src-git routing https://github.com/openwrt/routing.git;openwrt-24.10#' feeds.conf.default
+    sed -i 's#^src-git telephony .*#src-git telephony https://github.com/openwrt/telephony.git;openwrt-24.10#' feeds.conf.default
+    echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
+    echo -e "  ${BOLD}${GREEN_COLOR}✓${RESET} ${BOLD}软件源配置完成${RESET}"
+    echo -e "  ${BOLD}${YELLOW_COLOR}➤${RESET} ${BOLD}已更新 4 个软件源到 openwrt-24.10 分支${RESET}"
+    echo ""
+
+    ### 第四步：更新和安装 feeds ###
+    clear
+    echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
+    echo -e "${BOLD}${WHITE}                   更新和安装 Feeds [4/4]${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
+    echo ""
+
+    echo -e "  ${BOLD}${CYAN_COLOR}⟳${RESET} ${BOLD}开始更新和安装软件包源...${RESET}"
+    echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
+
+    # 检查是否在 openwrt 目录中
+    if [ ! -f "feeds.conf.default" ] || [ ! -d "scripts" ]; then
+        echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${RED_COLOR}✗${RESET} ${BOLD}错误: 请在 openwrt 根目录中运行此脚本${RESET}"
+        echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
+        echo -e "  ${BOLD}${RED_COLOR}✗${RESET} ${BOLD}Feeds 更新失败${RESET}"
+        return 1
+    fi
+
+    echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 📦 操作: 更新所有软件包源${RESET}"
+    echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ⚡ 命令: ./scripts/feeds update -a${RESET}"
+    echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
+
+    # 更新 feeds
+    echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 🔄 正在更新软件包源列表...${RESET}"
+    if ./scripts/feeds update -a >/dev/null 2>&1; then
+        echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${GREEN_COLOR}✓${RESET} ${BOLD}软件包源更新成功${RESET}"
+    else
+        echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${RED_COLOR}✗${RESET} ${BOLD}软件包源更新失败${RESET}"
+        echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
+        echo -e "  ${BOLD}${RED_COLOR}✗${RESET} ${BOLD}Feeds 更新失败${RESET}"
+        return 1
+    fi
+
+    echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
+    echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 📦 操作: 安装所有软件包${RESET}"
+    echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ⚡ 命令: ./scripts/feeds install -a${RESET}"
+    echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
+
+    # 安装 feeds
+    echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 🔧 正在安装软件包...${RESET}"
+    if ./scripts/feeds install -a >/dev/null 2>&1; then
+        echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${GREEN_COLOR}✓${RESET} ${BOLD}软件包安装成功${RESET}"
+    else
+        echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${RED_COLOR}✗${RESET} ${BOLD}软件包安装失败${RESET}"
+        echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
+        echo -e "  ${BOLD}${RED_COLOR}✗${RESET} ${BOLD}Feeds 安装失败${RESET}"
+        return 1
+    fi
+
+    echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
+    echo -e "  ${BOLD}${GREEN_COLOR}✓${RESET} ${BOLD}Feeds 更新和安装完成${RESET}"
+    echo -e "  ${BOLD}${YELLOW_COLOR}➤${RESET} ${BOLD}所有软件包源已就绪，可以开始配置编译${RESET}"
+    echo ""
+    echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■${RESET}"
+    echo -e "${BOLD}${GREEN_COLOR}                   源代码准备阶段完成！${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■${RESET}"
+    echo ""
 }
     
 # 主执行逻辑
