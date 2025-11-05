@@ -57,7 +57,7 @@ validate_password() {
         local encoded_reversed_input=$(echo -n "$reversed_input" | base64)
         encoded_reversed_input=$(echo -n "$encoded_reversed_input" | tr -d '\n')
         
-        if [ "$encoded_reversed_input" = "$ENCODED_REVERSED_PASSWORD" ]; then
+        if [ "$encoded_reversed_input" = "$PASSWORD" ]; then
             echo ""
             echo -e "${BOLD}${GREEN}✅ 身份验证成功！正在加载系统...${RESET}"
             echo -e "${BOLD}${MAGENTA}════════════════════════════════════════════════════════════════${RESET}"
