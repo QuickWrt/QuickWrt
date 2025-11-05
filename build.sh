@@ -130,6 +130,7 @@ setup_curl_progress() {
     if curl --help | grep progress-bar >/dev/null 2>&1; then
         CURL_BAR="--progress-bar";
     fi
+}
 
 # 编译脚本 - 克隆源代码
 prepare_source_code() {
@@ -188,7 +189,6 @@ prepare_source_code() {
     echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 📁 目标文件: ${CYAN_COLOR}feeds.conf.default${RESET}"
     echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
     echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 🔄 正在更新软件源配置...${RESET}"
-    cd openwrt && curl -Os $mirror/openwrt/patch/key.tar.gz && tar zxf key.tar.gz && rm -f key.tar.gz
     sed -i 's#^src-git packages .*#src-git packages https://github.com/openwrt/packages.git;openwrt-24.10#' feeds.conf.default
     sed -i 's#^src-git luci .*#src-git luci https://github.com/openwrt/luci.git;openwrt-24.10#' feeds.conf.default
     sed -i 's#^src-git routing .*#src-git routing https://github.com/openwrt/routing.git;openwrt-24.10#' feeds.conf.default
