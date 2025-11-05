@@ -6,8 +6,8 @@ sed -i 's/Os/O2/g' include/target.mk
 
 # Rockchip - rkbin & u-boot
 rm -rf package/boot/rkbin package/boot/uboot-rockchip package/boot/arm-trusted-firmware-rockchip
-git clone -b openwrt-24.10 https://$git_name:$git_password@gitea.kejizero.xyz/zhao/uboot-rockchip package/boot/uboot-rockchip
-git clone -b openwrt-24.10 https://$git_name:$git_password@gitea.kejizero.xyz/zhao/arm-trusted-firmware-rockchip package/boot/arm-trusted-firmware-rockchip
+git clone -b openwrt-24.10 https://zhao:$git_password@gitea.kejizero.xyz/zhao/uboot-rockchip package/boot/uboot-rockchip
+git clone -b openwrt-24.10 https://zhao:$git_password@gitea.kejizero.xyz/zhao/arm-trusted-firmware-rockchip package/boot/arm-trusted-firmware-rockchip
 
 # Generic Patch
 curl -s $mirror/openwrt/patch/generic-24.10/0001-kernel-update-Config-kernel.in-for-Linux-6.12-support.patch | patch -p1
