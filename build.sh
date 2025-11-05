@@ -137,7 +137,7 @@ prepare_source_code() {
     ### 第一步：查询版本 ###
     clear
     echo -e "${BOLD}${BLUE_COLOR}■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
-    echo -e "${BOLD}${WHITE}                   准备源代码 [1/5]${RESET}"
+    echo -e "${BOLD}${WHITE}                   准备源代码 [1/6]${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
     echo ""    
     echo -e "  ${BOLD}${CYAN_COLOR}⟳${RESET} ${BOLD}查询最新 OpenWRT 版本${RESET}"
@@ -153,7 +153,7 @@ prepare_source_code() {
     ### 第二步：克隆代码 ###
     clear
     echo -e "${BOLD}${BLUE_COLOR}■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
-    echo -e "${BOLD}${WHITE}                   克隆源代码 [2/5]${RESET}"
+    echo -e "${BOLD}${WHITE}                   克隆源代码 [2/6]${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
     echo ""
     
@@ -182,7 +182,7 @@ prepare_source_code() {
     ### 第三步：更新 feeds.conf.default ###
     clear
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
-    echo -e "${BOLD}${WHITE}                   更新 feeds.conf.default [3/5]${RESET}"
+    echo -e "${BOLD}${WHITE}                   更新 feeds.conf.default [3/6]${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
     echo ""
 
@@ -201,7 +201,7 @@ prepare_source_code() {
     ### 第四步：更新和安装 feeds ###
     clear
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
-    echo -e "${BOLD}${WHITE}                   更新和安装 Feeds [4/5]${RESET}"
+    echo -e "${BOLD}${WHITE}                   更新和安装 Feeds [4/6]${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
     echo ""
 
@@ -255,7 +255,7 @@ prepare_source_code() {
     ### 第五步：更新密钥文件 ###
     clear
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
-    echo -e "${BOLD}${WHITE}                         更新密钥文件 [5/5]${RESET}"
+    echo -e "${BOLD}${WHITE}                         更新密钥文件 [5/6]${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
     echo ""
 
@@ -299,96 +299,91 @@ prepare_source_code() {
         return 1
     fi
 
-    echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■${RESET}"
-    echo -e "${BOLD}${GREEN_COLOR}                   源代码准备阶段完成！${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■${RESET}"
-    echo ""
-}
-
-# 执行构建脚本
-execute_build_scripts() {
-    ### 第一步：准备构建脚本 ###
+    ### 第六步：执行构建脚本 ###
     clear
-    echo -e "${BOLD}${BLUE_COLOR}■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
-    echo -e "${BOLD}${WHITE}                   执行构建脚本 [1/3]${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
+    echo -e "${BOLD}${WHITE}                         执行构建脚本 [6/6]${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
     echo ""
-    
-    echo -e "  ${BOLD}${CYAN_COLOR}⟳${RESET} ${BOLD}开始准备构建脚本...${RESET}"
-    echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
-    
-    # 定义脚本列表
+
     scripts=(
-      00-prepare_base.sh
-      01-prepare_base-mainline.sh
-      02-prepare_package.sh
-      03-convert_translation.sh
-      04-fix_kmod.sh
-      05-fix-source.sh
+        "00-prepare_base.sh"
+        "01-prepare_base-mainline.sh" 
+        "02-prepare_package.sh"
+        "03-convert_translation.sh"
+        "04-fix_kmod.sh"
+        "05-fix-source.sh"
+        "99_clean_build_cache.sh"
     )
-    
-    # 下载构建脚本
-    for script in "${scripts[@]}"; do
-        echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 📥 下载脚本: ${CYAN_COLOR}$script${RESET}"
-        if curl -fsS -O "$mirror/openwrt/scripts/$script" >/dev/null 2>&1; then
-            echo -e "  ${BOLD}${MAGENTA_COLOR}│  ${GREEN_COLOR}✓${RESET} ${BOLD}成功${RESET}"
-        else
-            echo -e "  ${BOLD}${MAGENTA_COLOR}│  ${RED_COLOR}✗${RESET} ${BOLD}下载失败${RESET}"
-            echo -e "  ${BOLD}${RED_COLOR}✗${RESET} ${BOLD}请检查镜像源: ${YELLOW_COLOR}$mirror${RESET}"
-            return 1
-        fi
-    done
+
+    echo -e "  ${BOLD}${CYAN_COLOR}⟳${RESET} ${BOLD}开始执行构建脚本...${RESET}"
     echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
-    
-    chmod 0755 *sh
-    echo -e "  ${BOLD}${GREEN_COLOR}✓${RESET} ${BOLD}所有脚本已赋予执行权限${RESET}"
-    echo ""
+    echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 📦 下载构建脚本 (${#scripts[@]}个)${RESET}"
 
-    ### 第二步：执行构建任务 ###
-    clear
-    echo -e "${BOLD}${BLUE_COLOR}■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
-    echo -e "${BOLD}${WHITE}                   运行构建任务 [2/3]${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
-    echo ""
-    
-    build_sequence=(
-        00-prepare_base.sh
-        01-prepare_base-mainline.sh
-        02-prepare_package.sh
-        04-fix_kmod.sh
-        05-fix-source.sh
-    )
-    
-    for step in "${build_sequence[@]}"; do
-        echo -e "  ${BOLD}${CYAN_COLOR}▶${RESET} ${BOLD}正在执行: ${YELLOW_COLOR}$step${RESET}"
-        echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
-        if bash "$step" >/dev/null 2>&1; then
-            echo -e "  ${BOLD}${GREEN_COLOR}✓${RESET} ${BOLD}$step 执行成功${RESET}"
+    # 下载脚本
+    downloaded_count=0
+    for script in "${scripts[@]}"; do
+        echo -ne "  ${BOLD}${MAGENTA_COLOR}│   📥 ${CYAN_COLOR}$script${RESET}"
+        if curl -fs --connect-timeout 30 "$MIRROR/openwrt/scripts/$script" -o "$script" 2>/dev/null; then
+            echo -e " ${GREEN_COLOR}✅${RESET}"
+            downloaded_count=$((downloaded_count + 1))
         else
-            echo -e "  ${BOLD}${RED_COLOR}✗${RESET} ${BOLD}$step 执行失败${RESET}"
-            echo -e "  ${BOLD}${YELLOW_COLOR}⚠${RESET} ${BOLD}请检查脚本内容或镜像源配置${RESET}"
+            echo -e " ${RED_COLOR}❌${RESET}"
+            echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
+            echo -e "  ${BOLD}${RED_COLOR}✗${RESET} ${BOLD}脚本下载失败${RESET}"
             return 1
         fi
-        echo ""
     done
 
-    ### 第三步：清理临时脚本 ###
-    clear
-    echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
-    echo -e "${BOLD}${WHITE}                   清理临时文件 [3/3]${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
-    echo ""
+    echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${GREEN_COLOR}✓${RESET} ${BOLD}下载完成: ${downloaded_count}/${#scripts[@]}${RESET}"
 
-    echo -e "  ${BOLD}${CYAN_COLOR}⟳${RESET} ${BOLD}正在清理构建脚本...${RESET}"
-    if rm -f 0*-*.sh >/dev/null 2>&1; then
-        echo -e "  ${BOLD}${GREEN_COLOR}✓${RESET} ${BOLD}临时脚本清理完成${RESET}"
+    # 设置权限
+    echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 🔧 设置执行权限...${RESET}"
+    if chmod 0755 *.sh 2>/dev/null; then
+        echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${GREEN_COLOR}✓${RESET} ${BOLD}权限设置成功${RESET}"
     else
-        echo -e "  ${BOLD}${YELLOW_COLOR}⚠${RESET} ${BOLD}部分脚本未能清理${RESET}"
+        echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${RED_COLOR}✗${RESET} ${BOLD}权限设置失败${RESET}"
+        return 1
     fi
 
+    # 执行构建脚本
+    build_scripts=(
+        "00-prepare_base.sh"
+        "01-prepare_base-mainline.sh"
+        "02-prepare_package.sh"
+        "04-fix_kmod.sh"
+        "05-fix-source.sh"
+    )
+
+    echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 🚀 执行构建脚本...${RESET}"
+    executed_count=0
+    for script in "${build_scripts[@]}"; do
+        echo -ne "  ${BOLD}${MAGENTA_COLOR}│   ⚡ ${CYAN_COLOR}$script${RESET}"
+        if bash "$script" 2>/dev/null; then
+            echo -e " ${GREEN_COLOR}✅${RESET}"
+            executed_count=$((executed_count + 1))
+        else
+            echo -e " ${RED_COLOR}❌${RESET}"
+        fi
+    done
+
+    echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${GREEN_COLOR}✓${RESET} ${BOLD}执行完成: ${executed_count}/${#build_scripts[@]}${RESET}"
+
+    # 清理临时文件
+    echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 🧹 清理临时文件...${RESET}"
+    if rm -f 0*-*.sh 2>/dev/null; then
+        echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${GREEN_COLOR}✓${RESET} ${BOLD}清理完成${RESET}"
+    else
+        echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${YELLOW_COLOR}⚠${RESET} ${BOLD}清理失败${RESET}"
+    fi
+
+    echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
+    echo -e "  ${BOLD}${GREEN_COLOR}✓${RESET} ${BOLD}构建脚本执行完成${RESET}"
+    echo -e "  ${BOLD}${YELLOW_COLOR}➤${RESET} ${BOLD}成功执行 ${executed_count}/${#build_scripts[@]} 个构建脚本${RESET}"
     echo ""
+
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■${RESET}"
-    echo -e "${BOLD}${GREEN_COLOR}                   构建脚本执行阶段完成！${RESET}"
+    echo -e "${BOLD}${GREEN_COLOR}                   源代码准备阶段完成！${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■${RESET}"
     echo ""
 }
@@ -400,7 +395,6 @@ main() {
     setup_build_environment
     setup_curl_progress
     prepare_source_code
-    execute_build_scripts
 }
 
 main "$@"
