@@ -23,6 +23,7 @@ export github="github.com"
 export cpu_cores=$(nproc)
 export gcc=${gcc_version:-13}
 export password="MzE4MzU3M2p6"
+export CURRENT_DATE=$(date +%Y%m%d)
 export supported_boards="x86_64 rockchip"
 export supported_build_modes=("accelerated" "normal" "toolchain-only")
 
@@ -519,6 +520,163 @@ prepare_source_code() {
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■${RESET}"
     echo -e "${BOLD}${GREEN_COLOR}                   源代码准备阶段完成！${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■${RESET}"
+    echo ""
+}
+
+# 编译执行函数
+compile_source_code() {
+    echo -e "${BOLD}${BLUE_COLOR}╔══════════════════════════════════════════════════════════════╗${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}║                     🚀 编译阶段开始 🚀                       ║${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}╚══════════════════════════════════════════════════════════════╝${RESET}"
+    echo ""
+    
+    # 显示编译配置信息
+    echo -e "  ${BOLD}${CYAN_COLOR}⚙️  编译配置${RESET}"
+    echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 架构平台: ${GREEN_COLOR}${platform}${RESET}"
+    echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 编译模式: ${GREEN_COLOR}${build_mode}${RESET}"
+    echo -e "  ${BOLD}${MAGENTA_COLOR}├─ GCC 版本: ${GREEN_COLOR}${gcc}${RESET}"
+    echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 并行编译: ${GREEN_COLOR}${cpu_cores} 核心${RESET}"
+    echo -e "  ${BOLD}${MAGENTA_COLOR}└─ 开始时间: ${GREEN_COLOR}$(date '+%Y-%m-%d %H:%M:%S')${RESET}"
+    echo ""
+
+    # 根据编译模式执行不同的编译流程
+    case "$build_mode_input" in
+        "normal")
+            # 普通编译模式
+            echo -e "${BOLD}${GREEN_COLOR}▶ 普通编译模式${RESET}"
+            echo -e "  ${BOLD}${CYAN_COLOR}────────────────────────────────────────────────────────────${RESET}"
+            
+            # 更新构建日期
+            echo -e "  ${BOLD}${YELLOW_COLOR}📝 更新构建信息...${RESET}"
+            sed -i "/BUILD_DATE/d" package/base-files/files/usr/lib/os-release
+            sed -i "/BUILD_ID/aBUILD_DATE=\"$CURRENT_DATE\"" package/base-files/files/usr/lib/os-release
+            echo -e "    ${GREEN_COLOR}✓${RESET} 构建日期: ${CURRENT_DATE}"
+            
+            # 开始编译
+            echo -e "  ${BOLD}${YELLOW_COLOR}🔨 开始编译固件...${RESET}"
+            echo -e "    ${CYAN_COLOR}▶${RESET} 使用核心: ${cpu_cores}"
+            echo -e "    ${CYAN_COLOR}▶${RESET} 编译命令: make -j${cpu_cores} IGNORE_ERRORS=\"n m\""
+            echo ""
+            
+            if make -j$cpu_cores IGNORE_ERRORS="n m"; then
+                echo -e "  ${BOLD}${GREEN_COLOR}✅ 普通编译完成${RESET}"
+            else
+                echo -e "  ${BOLD}${RED_COLOR}❌ 编译失败${RESET}"
+                return 1
+            fi
+            ;;
+
+        "toolchain-only")
+            # 仅编译工具链模式
+            echo -e "${BOLD}${GREEN_COLOR}▶ 工具链编译模式${RESET}"
+            echo -e "  ${BOLD}${CYAN_COLOR}────────────────────────────────────────────────────────────${RESET}"
+            
+            # 编译工具链
+            echo -e "  ${BOLD}${YELLOW_COLOR}🔧 编译工具链...${RESET}"
+            echo -e "    ${CYAN_COLOR}▶${RESET} 使用核心: ${cpu_cores}"
+            echo ""
+            
+            if make -j$cpu_cores toolchain/compile || make -j$cpu_cores toolchain/compile V=s; then
+                echo -e "    ${GREEN_COLOR}✓${RESET} 工具链编译完成"
+                
+                # 创建工具链缓存
+                echo -e "  ${BOLD}${YELLOW_COLOR}💾 创建工具链缓存...${RESET}"
+                mkdir -p toolchain-cache
+                
+                if tar -I "zstd -19 -T$(nproc --all)" -cf toolchain-cache/toolchain_musl_${toolchain_arch}_gcc-${gcc}${tools_suffix}.tar.zst ./{build_dir,dl,staging_dir,tmp}; then
+                    echo -e "    ${GREEN_COLOR}✓${RESET} 缓存文件: toolchain_${LIBC}_${toolchain_arch}_gcc-${gcc}.tar.zst"
+                else
+                    echo -e "    ${RED_COLOR}✗${RESET} 缓存创建失败"
+                    return 1
+                fi
+            else
+                echo -e "    ${RED_COLOR}✗${RESET} 工具链编译失败"
+                return 1
+            fi
+            ;;
+
+        "accelerated")
+            # 加速编译模式
+            echo -e "${BOLD}${GREEN_COLOR}▶ 加速编译模式${RESET}"
+            echo -e "  ${BOLD}${CYAN_COLOR}────────────────────────────────────────────────────────────${RESET}"
+            
+            # 设置工具链变量
+            [ "$ENABLE_GLIBC" = "y" ] && LIBC=glibc || LIBC=musl
+            tools_suffix=""
+            
+            # 下载预编译工具链
+            echo -e "  ${BOLD}${YELLOW_COLOR}📥 下载预编译工具链...${RESET}"
+            
+            # 确定工具链URL
+            PLATFORM_ID=""
+            [ -f /etc/os-release ] && source /etc/os-release
+            if [ "$PLATFORM_ID" = "platform:el9" ]; then
+                TOOLCHAIN_URL="http://127.0.0.1:8080"
+            else
+                TOOLCHAIN_URL="https://${github_proxy}github.com/QuickWrt/openwrt_caches/releases/download/openwrt-24.10"
+            fi
+            
+            echo -e "    ${CYAN_COLOR}▶${RESET} 下载源: ${TOOLCHAIN_URL}"
+            echo -e "    ${CYAN_COLOR}▶${RESET} 目标文件: toolchain_${LIBC}_${toolchain_arch}_gcc-${gcc}.tar.zst"
+            
+            if curl -L ${TOOLCHAIN_URL}/toolchain_${LIBC}_${toolchain_arch}_gcc-${gcc}${tools_suffix}.tar.zst -o toolchain.tar.zst $CURL_BAR; then
+                echo -e "    ${GREEN_COLOR}✓${RESET} 工具链下载成功"
+                
+                # 处理工具链
+                echo -e "  ${BOLD}${YELLOW_COLOR}🔄 处理工具链...${RESET}"
+                if tar -I "zstd" -xf toolchain.tar.zst; then
+                    echo -e "    ${GREEN_COLOR}✓${RESET} 工具链解压成功"
+                    
+                    # 清理和准备
+                    rm -f toolchain.tar.zst
+                    mkdir -p bin
+                    find ./staging_dir/ -name '*' -exec touch {} \; >/dev/null 2>&1
+                    find ./tmp/ -name '*' -exec touch {} \; >/dev/null 2>&1
+                    echo -e "    ${GREEN_COLOR}✓${RESET} 环境准备完成"
+                else
+                    echo -e "    ${RED_COLOR}✗${RESET} 工具链解压失败"
+                    return 1
+                fi
+            else
+                echo -e "    ${RED_COLOR}✗${RESET} 工具链下载失败"
+                return 1
+            fi
+
+            echo -e "  ${BOLD}${CYAN_COLOR}────────────────────────────────────────────────────────────${RESET}"
+            
+            # 编译固件（与普通模式相同的编译步骤）
+            echo -e "  ${BOLD}${YELLOW_COLOR}🔨 开始编译固件...${RESET}"
+            
+            # 更新构建日期
+            sed -i "/BUILD_DATE/d" package/base-files/files/usr/lib/os-release
+            sed -i "/BUILD_ID/aBUILD_DATE=\"$CURRENT_DATE\"" package/base-files/files/usr/lib/os-release
+            echo -e "    ${GREEN_COLOR}✓${RESET} 构建日期: ${CURRENT_DATE}"
+            
+            echo -e "    ${CYAN_COLOR}▶${RESET} 使用核心: ${cpu_cores}"
+            echo -e "    ${CYAN_COLOR}▶${RESET} 编译命令: make -j${cpu_cores} IGNORE_ERRORS=\"n m\""
+            echo ""
+            
+            if make -j$cpu_cores IGNORE_ERRORS="n m"; then
+                echo -e "  ${BOLD}${GREEN_COLOR}✅ 加速编译完成${RESET}"
+            else
+                echo -e "  ${BOLD}${RED_COLOR}❌ 编译失败${RESET}"
+                return 1
+            fi
+            ;;
+    esac
+
+    echo ""
+    echo -e "${BOLD}${BLUE_COLOR}╔══════════════════════════════════════════════════════════════╗${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}║                     🎉 编译阶段完成 🎉                       ║${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}╚══════════════════════════════════════════════════════════════╝${RESET}"
+    echo ""
+    
+    # 显示完成信息
+    echo -e "  ${BOLD}${GREEN_COLOR}✅ 编译任务执行完毕${RESET}"
+    echo -e "  ${BOLD}${CYAN_COLOR}├─ 输出目录: ${GREEN_COLOR}$(pwd)/bin${RESET}"
+    echo -e "  ${BOLD}${CYAN_COLOR}├─ 编译模式: ${GREEN_COLOR}${build_mode}${RESET}"
+    echo -e "  ${BOLD}${CYAN_COLOR}├─ 架构平台: ${GREEN_COLOR}${platform}${RESET}"
+    echo -e "  ${BOLD}${CYAN_COLOR}└─ 完成时间: ${GREEN_COLOR}$(date '+%Y-%m-%d %H:%M:%S')${RESET}"
     echo ""
 }
 
