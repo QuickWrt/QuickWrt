@@ -117,7 +117,7 @@ show_usage() {
     echo -e "${BOLD}${BLUE_COLOR}════════════════════════════════════════════════════════════════${RESET}"
 }
 
-# 参数检测（放在函数外面）
+# 参数检测
 if [ $# -eq 0 ] || [ -z "$1" ]; then
     echo -e "${BOLD}${RED_COLOR}❌ 错误：请指定架构参数！${RESET}"
     show_usage
@@ -125,9 +125,8 @@ if [ $# -eq 0 ] || [ -z "$1" ]; then
 fi
 
 # 检查第一个参数是否为支持的架构
-arch="$1"
-if [[ ! " ${supported_boards[@]} " =~ " ${arch} " ]]; then
-    echo -e "${BOLD}${RED_COLOR}❌ 错误：不支持的架构 '$arch'！${RESET}"
+if [[ ! " ${supported_boards[@]} " =~ " ${platform} " ]]; then
+    echo -e "${BOLD}${RED_COLOR}❌ 错误：不支持的架构 '$platform'！${RESET}"
     show_usage
     exit 1
 fi
@@ -513,7 +512,7 @@ prepare_source_code() {
     
     echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
     echo -e "  ${BOLD}${GREEN_COLOR}✓${RESET} ${BOLD}配置文件加载完成${RESET}"
-    echo -e "  ${BOLD}${YELLOW_COLOR}➤${RESET} ${BOLD}架构: ${CYAN_COLOR}${arch}${RESET}"
+    echo -e "  ${BOLD}${YELLOW_COLOR}➤${RESET} ${BOLD}架构: ${CYAN_COLOR}${platform}${RESET}"
     echo -e "  ${BOLD}${YELLOW_COLOR}➤${RESET} ${BOLD}GCC 版本: ${CYAN_COLOR}${gcc}${RESET}"
     echo ""
     
@@ -531,6 +530,7 @@ main() {
     setup_build_environment
     setup_curl_progress
     prepare_source_code
+    compile_source_code
 }
 
 main "$@"
