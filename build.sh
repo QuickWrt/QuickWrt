@@ -604,9 +604,7 @@ compile_source_code() {
             echo -e "  ${BOLD}${YELLOW_COLOR}📥 下载预编译工具链...${RESET}"
             
             # 确定工具链URL
-            PLATFORM_ID=""
-            [ -f /etc/os-release ] && source /etc/os-release
-            if [ "$PLATFORM_ID" = "platform:el9" ]; then
+            if [ "$(whoami)" = "zhao" ]; then
                 TOOLCHAIN_URL="http://127.0.0.1:8080"
             else
                 TOOLCHAIN_URL="https://$github/QuickWrt/openwrt_caches/releases/download/openwrt-24.10"
