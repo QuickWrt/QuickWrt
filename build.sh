@@ -19,6 +19,7 @@ export author="OPPEN321"
 export blog="www.kejizero.online"
 export mirror="https://openwrt.kejizero.xyz"
 export gitea="gitea.kejizero.xyz"
+export github="github.com"
 export cpu_cores=$(nproc)
 export gcc=${gcc_version:-13}
 export password="MzE4MzU3M2p6"
