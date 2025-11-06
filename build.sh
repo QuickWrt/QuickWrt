@@ -23,6 +23,7 @@ export github="github.com"
 export cpu_cores=$(nproc)
 export gcc=${gcc_version:-13}
 export password="MzE4MzU3M2p6"
+export supported_boards="x86_64 rockchip"
 
 # 编译模式
 case "$2" in
@@ -140,7 +141,7 @@ setup_curl_progress() {
 prepare_source_code() {
     ### 第一步：查询版本 ###
     echo -e "${BOLD}${BLUE_COLOR}■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
-    echo -e "${BOLD}${WHITE}                   准备源代码 [1/6]${RESET}"
+    echo -e "${BOLD}${WHITE}                   准备源代码 [1/7]${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
     echo ""    
     echo -e "  ${BOLD}${CYAN_COLOR}⟳${RESET} ${BOLD}查询最新 OpenWRT 版本${RESET}"
@@ -155,7 +156,7 @@ prepare_source_code() {
 
     ### 第二步：克隆代码 ###
     echo -e "${BOLD}${BLUE_COLOR}■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
-    echo -e "${BOLD}${WHITE}                   克隆源代码 [2/6]${RESET}"
+    echo -e "${BOLD}${WHITE}                   克隆源代码 [2/7]${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
     echo ""
     
@@ -183,7 +184,7 @@ prepare_source_code() {
 
     ### 第三步：更新 feeds.conf.default ###
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
-    echo -e "${BOLD}${WHITE}                   更新 feeds.conf.default [3/6]${RESET}"
+    echo -e "${BOLD}${WHITE}                   更新 feeds.conf.default [3/7]${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
     echo ""
 
@@ -201,7 +202,7 @@ prepare_source_code() {
 
     ### 第四步：更新和安装 feeds ###
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
-    echo -e "${BOLD}${WHITE}                   更新和安装 Feeds [4/6]${RESET}"
+    echo -e "${BOLD}${WHITE}                   更新和安装 Feeds [4/7]${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
     echo ""
 
@@ -254,7 +255,7 @@ prepare_source_code() {
 
     ### 第五步：更新密钥文件 ###
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
-    echo -e "${BOLD}${WHITE}                         更新密钥文件 [5/6]${RESET}"
+    echo -e "${BOLD}${WHITE}                         更新密钥文件 [5/7]${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
     echo ""
 
@@ -300,7 +301,7 @@ prepare_source_code() {
 
     ### 第六步：执行构建脚本 ###
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
-    echo -e "${BOLD}${WHITE}                         执行构建脚本 [6/6]${RESET}"
+    echo -e "${BOLD}${WHITE}                         执行构建脚本 [6/7]${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
     echo ""
 
@@ -378,6 +379,56 @@ prepare_source_code() {
     echo -e "  ${BOLD}${YELLOW_COLOR}➤${RESET} ${BOLD}成功执行 ${executed_count}/${#build_scripts[@]} 个构建脚本${RESET}"
     echo ""
 
+    ### 第七步：加载配置文件 ###
+    echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
+    echo -e "${BOLD}${WHITE}                         加载配置文件 [7/7]${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
+    echo ""
+    
+    echo -e "  ${BOLD}${CYAN_COLOR}⟳${RESET} ${BOLD}加载配置文件...${RESET}"
+    echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
+    
+    # 根据架构下载对应的配置文件
+    case "$arch" in
+        "x86_64")
+            echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 🖥️  检测到 x86_64 架构${RESET}"
+            curl -s $mirror/openwrt/24-config-musl-x86 > .config
+            echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${GREEN_COLOR}✓${RESET} ${BOLD}下载 x86 配置文件${RESET}"
+            ;;
+        "rockchip")
+            echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 📱 检测到 Rockchip 架构${RESET}"
+            curl -s $mirror/openwrt/24-config-musl-rockchip > .config
+            echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${GREEN_COLOR}✓${RESET} ${BOLD}下载 Rockchip 配置文件${RESET}"
+            ;;
+        *)
+            echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${YELLOW_COLOR}⚠${RESET} ${BOLD}未知架构: $ARCH，使用默认配置${RESET}"
+            ;;
+    esac
+    
+    # 应用 GCC 补丁
+    echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 🔧 应用 GCC 补丁...${RESET}"
+    if curl -s $mirror/openwrt/patch/generic-24.10/202-toolchain-gcc-add-support-for-GCC-15.patch | patch -p1; then
+        echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${GREEN_COLOR}✓${RESET} ${BOLD}GCC 补丁应用成功${RESET}"
+    else
+        echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${RED_COLOR}✗${RESET} ${BOLD}GCC 补丁应用失败${RESET}"
+    fi
+    
+    # 配置 GCC 版本
+    echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ⚙️  配置 GCC 版本 (${gcc})...${RESET}"
+    {
+        echo -e "\n# gcc ${gcc}"
+        echo -e "CONFIG_DEVEL=y"
+        echo -e "CONFIG_TOOLCHAINOPTS=y" 
+        echo -e "CONFIG_GCC_USE_VERSION_${gcc}=y\n"
+    } >> .config
+    
+    echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${GREEN_COLOR}✓${RESET} ${BOLD}GCC ${gcc} 配置完成${RESET}"
+    echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
+    echo -e "  ${BOLD}${GREEN_COLOR}✓${RESET} ${BOLD}配置文件加载完成${RESET}"
+    echo -e "  ${BOLD}${YELLOW_COLOR}➤${RESET} ${BOLD}架构: ${CYAN_COLOR}${arch}${RESET}"
+    echo -e "  ${BOLD}${YELLOW_COLOR}➤${RESET} ${BOLD}GCC 版本: ${CYAN_COLOR}${gcc}${RESET}"
+    echo ""
+    
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■${RESET}"
     echo -e "${BOLD}${GREEN_COLOR}                   源代码准备阶段完成！${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■${RESET}"
