@@ -14,14 +14,14 @@ rm -rf package/network/utils/xdp-tools
 git clone https://$github/sbwml/package_network_utils_xdp-tools package/network/utils/xdp-tools
 
 # fix gcc14
-if [ "$USE_GCC14" = y ] || [ "$USE_GCC15" = y ]; then
+if [ "$gcc" = 14 ] || [ "$gcc" = 15 ]; then
     # linux-atm
     rm -rf package/network/utils/linux-atm
     git clone https://$github/sbwml/package_network_utils_linux-atm package/network/utils/linux-atm
 fi
 
 # fix gcc-15
-if [ "$USE_GCC15" = y ]; then
+if [ "$gcc" = 15 ]; then
     sed -i '/TARGET_CFLAGS/ s/$/ -Wno-error=unterminated-string-initialization/' package/libs/mbedtls/Makefile
     # elfutils
     curl -s $mirror/openwrt/patch/openwrt-6.x/gcc-15/elfutils/901-backends-fix-string-initialization-error-on-gcc15.patch > package/libs/elfutils/patches/901-backends-fix-string-initialization-error-on-gcc15.patch
@@ -34,7 +34,7 @@ if [ "$USE_GCC15" = y ]; then
 fi
 
 # fix gcc-15.0.1 C23
-if [ "$USE_GCC15" = y ]; then
+if [ "$gcc" = 15 ]; then
     # gmp
     mkdir -p package/libs/gmp/patches
     curl -s $mirror/openwrt/patch/openwrt-6.x/gcc-15-c23/gmp/001-fix-build-with-gcc-15.patch > package/libs/gmp/patches/001-fix-build-with-gcc-15.patch
