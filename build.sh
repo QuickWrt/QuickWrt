@@ -583,8 +583,8 @@ compile_source_code() {
                 echo -e "  ${BOLD}${YELLOW_COLOR}💾 创建工具链缓存...${RESET}"
                 mkdir -p toolchain-cache
                 
-                if tar -I "zstd -19 -T$(nproc --all)" -cf toolchain-cache/toolchain_musl_${toolchain_arch}_gcc-${gcc}${tools_suffix}.tar.zst ./{build_dir,dl,staging_dir,tmp}; then
-                    echo -e "    ${GREEN_COLOR}✓${RESET} 缓存文件: toolchain_${LIBC}_${toolchain_arch}_gcc-${gcc}.tar.zst"
+                if tar -I "zstd -19 -T$(nproc --all)" -cf toolchain-cache/toolchain_musl_${toolchain_arch}_gcc-${gcc}.tar.zst ./{build_dir,dl,staging_dir,tmp}; then
+                    echo -e "    ${GREEN_COLOR}✓${RESET} 缓存文件: toolchain_musl_${toolchain_arch}_gcc-${gcc}.tar.zst"
                 else
                     echo -e "    ${RED_COLOR}✗${RESET} 缓存创建失败"
                     return 1
