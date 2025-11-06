@@ -11,7 +11,7 @@ sed -i '/USE_QUIC_OPENSSL_COMPAT/d' feeds/packages/net/haproxy/Makefile
 
 # xdp-tools
 rm -rf package/network/utils/xdp-tools
-git clone https://$github/sbwml/package_network_utils_xdp-tools package/network/utils/xdp-tools
+git clone https://$gitea/zhao/package_network_utils_xdp-tools package/network/utils/xdp-tools
 
 # fix gcc14
 if [ "$gcc" = 14 ] || [ "$gcc" = 15 ]; then
