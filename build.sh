@@ -18,6 +18,7 @@ version='v1.2.0 (2025.11.04)'
 export author="OPPEN321"
 export blog="www.kejizero.online"
 export mirror="https://openwrt.kejizero.xyz"
+export gitea="gitea.kejizero.xyz"
 export cpu_cores=$(nproc)
 export gcc=${gcc_version:-13}
 export password="MzE4MzU3M2p6"
