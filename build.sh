@@ -24,22 +24,7 @@ export cpu_cores=$(nproc)
 export gcc=${gcc_version:-13}
 export password="MzE4MzU3M2p6"
 export supported_boards="x86_64 rockchip"
-
-# 编译模式
-case "$2" in
-    "accelerated") 
-        export build_mode="加速编译"
-        ;;
-    "normal") 
-        export build_mode="普通编译"
-        ;;
-    "toolchain-only") 
-        export build_mode="仅工具链"
-        ;;
-    *) 
-        export build_mode="加速编译"
-        ;;
-esac
+export supported_build_modes=("accelerated" "normal" "toolchain-only")
 
 # 密码验证
 validate_password() {
@@ -90,6 +75,80 @@ validate_password() {
         fi
     done
 }
+
+# 显示使用帮助
+show_usage() {
+    clear
+    echo -e "${BOLD}${BLUE_COLOR}╔══════════════════════════════════════════════════════════════╗${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}║                       📚 使用帮助 📚                       ║${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}╚══════════════════════════════════════════════════════════════╝${RESET}"
+    echo ""
+    echo -e "${BOLD}${CYAN_COLOR}📖 使用方法:${RESET}"
+    echo -e "  ${BOLD}bash $0 <architecture> [build_mode]${RESET}"
+    echo ""
+    echo -e "${BOLD}${CYAN_COLOR}🏗️  支持的架构:${RESET}"
+    for arch in "${supported_boards[@]}"; do
+        echo -e "  ${BOLD}${GREEN_COLOR}▶${RESET} ${GREEN_COLOR}$arch${RESET}"
+    done
+    echo ""
+    echo -e "${BOLD}${CYAN_COLOR}⚙️  支持的编译模式:${RESET}"
+    echo -e "  ${BOLD}${GREEN_COLOR}▶${RESET} ${GREEN_COLOR}accelerated${RESET}   - 加速编译（下载预编译工具链）"
+    echo -e "  ${BOLD}${GREEN_COLOR}▶${RESET} ${GREEN_COLOR}normal${RESET}        - 普通编译（完整编译所有组件）"
+    echo -e "  ${BOLD}${GREEN_COLOR}▶${RESET} ${GREEN_COLOR}toolchain-only${RESET} - 仅编译工具链（用于缓存）"
+    echo ""
+    echo -e "${BOLD}${CYAN_COLOR}🌰 使用示例:${RESET}"
+    echo -e "  ${BOLD}bash $0 x86_64 accelerated${RESET}"
+    echo -e "  ${BOLD}bash $0 rockchip normal${RESET}"
+    echo -e "  ${BOLD}bash $0 x86_64 toolchain-only${RESET}"
+    echo ""
+    echo -e "${BOLD}${BLUE_COLOR}════════════════════════════════════════════════════════════════${RESET}"
+}
+
+# 参数检测（放在函数外面）
+if [ $# -eq 0 ] || [ -z "$1" ]; then
+    echo -e "${BOLD}${RED_COLOR}❌ 错误：请指定架构参数！${RESET}"
+    show_usage
+    exit 1
+fi
+
+# 检查第一个参数是否为支持的架构
+arch="$1"
+if [[ ! " ${supported_boards[@]} " =~ " ${arch} " ]]; then
+    echo -e "${BOLD}${RED_COLOR}❌ 错误：不支持的架构 '$arch'！${RESET}"
+    show_usage
+    exit 1
+fi
+
+# 检查第二个参数是否为支持的编译模式
+if [ $# -ge 2 ] && [ -n "$2" ]; then
+    build_mode_input="$2"
+    if [[ ! " ${supported_build_modes[@]} " =~ " ${build_mode_input} " ]]; then
+        echo -e "${BOLD}${RED_COLOR}❌ 错误：不支持的编译模式 '$build_mode_input'！${RESET}"
+        show_usage
+        exit 1
+    fi
+else
+    # 如果没有提供第二个参数，使用默认模式
+    build_mode_input="accelerated"
+    echo -e "${BOLD}${YELLOW_COLOR}⚠️  未指定编译模式，使用默认模式: accelerated${RESET}"
+    echo ""
+fi
+
+# 编译模式设置
+case "$build_mode_input" in
+    "accelerated") 
+        export build_mode="加速编译"
+        ;;
+    "normal") 
+        export build_mode="普通编译"
+        ;;
+    "toolchain-only") 
+        export build_mode="仅工具链"
+        ;;
+    *) 
+        export build_mode="加速编译"
+        ;;
+esac
 
 # 打印
 show_banner() {
@@ -389,7 +448,7 @@ prepare_source_code() {
     echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
     
     # 根据架构下载对应的配置文件
-    case "$arch" in
+    case "$1" in
         "x86_64")
             echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 🖥️  检测到 x86_64 架构${RESET}"
             curl -s $mirror/openwrt/24-config-musl-x86 > .config
@@ -401,7 +460,12 @@ prepare_source_code() {
             echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${GREEN_COLOR}✓${RESET} ${BOLD}下载 Rockchip 配置文件${RESET}"
             ;;
         *)
-            echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${YELLOW_COLOR}⚠${RESET} ${BOLD}未知架构: $ARCH，使用默认配置${RESET}"
+            echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${RED_COLOR}❌${RESET} ${BOLD}错误：未知架构 '$1'${RESET}"
+            echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${YELLOW_COLOR}ℹ️ ${RESET} ${BOLD}支持的架构: ${supported_boards[*]}${RESET}"
+            echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${RED_COLOR}🚫${RESET} ${BOLD}脚本终止执行${RESET}"
+            echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
+            echo -e "  ${BOLD}${RED_COLOR}✗${RESET} ${BOLD}配置文件加载失败${RESET}"
+            exit 1
             ;;
     esac
     
@@ -437,6 +501,7 @@ prepare_source_code() {
 
 # 主执行逻辑
 main() {
+    show_usage
     validate_password
     show_banner
     setup_build_environment
