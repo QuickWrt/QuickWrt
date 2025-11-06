@@ -499,6 +499,18 @@ prepare_source_code() {
     } >> .config
     
     echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${GREEN_COLOR}✓${RESET} ${BOLD}GCC ${gcc} 配置完成${RESET}"
+    
+    # 生成 defconfig
+    echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ⚙️  生成 defconfig...${RESET}"
+    if make defconfig; then
+        echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${GREEN_COLOR}✓${RESET} ${BOLD}defconfig 生成成功${RESET}"
+    else
+        echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${RED_COLOR}✗${RESET} ${BOLD}defconfig 生成失败${RESET}"
+        echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
+        echo -e "  ${BOLD}${RED_COLOR}✗${RESET} ${BOLD}配置文件加载失败${RESET}"
+        exit 1
+    fi
+    
     echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
     echo -e "  ${BOLD}${GREEN_COLOR}✓${RESET} ${BOLD}配置文件加载完成${RESET}"
     echo -e "  ${BOLD}${YELLOW_COLOR}➤${RESET} ${BOLD}架构: ${CYAN_COLOR}${arch}${RESET}"
