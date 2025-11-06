@@ -615,7 +615,7 @@ compile_source_code() {
             echo -e "    ${CYAN_COLOR}▶${RESET} 下载源: ${TOOLCHAIN_URL}"
             echo -e "    ${CYAN_COLOR}▶${RESET} 目标文件: toolchain_musl_${toolchain_arch}_gcc-${gcc}.tar.zst"
             
-            if curl -L ${TOOLCHAIN_URL}/toolchain_${LIBC}_${toolchain_arch}_gcc-${gcc}${tools_suffix}.tar.zst -o toolchain.tar.zst $CURL_BAR; then
+            if curl -L ${TOOLCHAIN_URL}/toolchain_musl_${toolchain_arch}_gcc-${gcc}.tar.zst -o toolchain.tar.zst $CURL_BAR; then
                 echo -e "    ${GREEN_COLOR}✓${RESET} 工具链下载成功"
                 
                 # 处理工具链
