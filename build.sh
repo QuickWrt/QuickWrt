@@ -451,9 +451,9 @@ prepare_source_code() {
     echo ""
 
     ### 第七步：加载配置文件 ###
-    echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ ■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
     echo -e "${BOLD}${WHITE}                         加载配置文件 [7/7]${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}■ ■ ■ ■ ■ ■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
     echo ""
     
     echo -e "  ${BOLD}${CYAN_COLOR}⟳${RESET} ${BOLD}加载配置文件...${RESET}"
