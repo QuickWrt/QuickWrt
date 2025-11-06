@@ -26,6 +26,19 @@ export password="MzE4MzU3M2p6"
 export supported_boards="x86_64 rockchip"
 export supported_build_modes=("accelerated" "normal" "toolchain-only")
 
+# 设备类型
+case "$1" in
+    rockchip)
+        platform="rockchip"
+        toolchain_arch="aarch64_generic"
+        ;;
+    x86_64)
+        platform="x86_64"
+        toolchain_arch="x86_64"
+        ;;
+esac
+export platform toolchain_arch
+
 # 密码验证
 validate_password() {
     clear
@@ -128,7 +141,6 @@ if [ $# -ge 2 ] && [ -n "$2" ]; then
         exit 1
     fi
 else
-    # 如果没有提供第二个参数，使用默认模式
     build_mode_input="accelerated"
     echo -e "${BOLD}${YELLOW_COLOR}⚠️  未指定编译模式，使用默认模式: accelerated${RESET}"
     echo ""
@@ -448,7 +460,7 @@ prepare_source_code() {
     echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
     
     # 根据架构下载对应的配置文件
-    case "$1" in
+    case "$platform" in
         "x86_64")
             echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 🖥️  检测到 x86_64 架构${RESET}"
             curl -s $mirror/openwrt/24-config-musl-x86 > .config
