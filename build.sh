@@ -17,7 +17,7 @@ version='v1.2.0 (2025.11.04)'
 # 各变量默认值
 export author="OPPEN321"
 export blog="www.kejizero.online"
-export mirror="https://openwrt.kejizero.xyz"
+export mirror="https://raw.githubusercontent.com/QuickWrt/QuickWrt/refs/heads/kernel-6.12"
 export cpu_cores=$(nproc)
 export gcc=${gcc_version:-13}
 export password="MzE4MzU3M2p6"
