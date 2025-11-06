@@ -502,7 +502,7 @@ prepare_source_code() {
     
     # 生成 defconfig
     echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ⚙️  生成 defconfig...${RESET}"
-    if make defconfig; then
+    if make defconfig > /dev/null 2>&1; then
         echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${GREEN_COLOR}✓${RESET} ${BOLD}defconfig 生成成功${RESET}"
     else
         echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${RED_COLOR}✗${RESET} ${BOLD}defconfig 生成失败${RESET}"
