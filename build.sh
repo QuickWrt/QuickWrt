@@ -354,7 +354,7 @@ prepare_source_code() {
     executed_count=0
     for script in "${build_scripts[@]}"; do
         echo -ne "  ${BOLD}${MAGENTA_COLOR}│   ⚡ ${CYAN_COLOR}$script${RESET}"
-        if bash "$script" 2>/dev/null; then
+        if bash "$script" >/dev/null 2>&1; then
             echo -e " ${GREEN_COLOR}✅${RESET}"
             executed_count=$((executed_count + 1))
         else
