@@ -93,7 +93,7 @@ validate_password() {
 show_usage() {
     clear
     echo -e "${BOLD}${BLUE_COLOR}╔══════════════════════════════════════════════════════════════╗${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║                       📚 使用帮助 📚                       ║${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}║                        📚 使用帮助 📚                        ║${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}╚══════════════════════════════════════════════════════════════╝${RESET}"
     echo ""
     echo -e "${BOLD}${CYAN_COLOR}📖 使用方法:${RESET}"
@@ -483,7 +483,7 @@ prepare_source_code() {
     
     # 应用 GCC 补丁
     echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 🔧 应用 GCC 补丁...${RESET}"
-    if curl -s $mirror/openwrt/patch/generic-24.10/202-toolchain-gcc-add-support-for-GCC-15.patch | patch -p1; then
+    if curl -s $mirror/openwrt/patch/generic-24.10/202-toolchain-gcc-add-support-for-GCC-15.patch | patch -p1 > /dev/null 2>&1; then
         echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${GREEN_COLOR}✓${RESET} ${BOLD}GCC 补丁应用成功${RESET}"
     else
         echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${RED_COLOR}✗${RESET} ${BOLD}GCC 补丁应用失败${RESET}"
