@@ -63,6 +63,8 @@ validate_password() {
         if [ "$encoded_reversed_input" = "$password" ]; then
             echo ""
             echo -e "${BOLD}${GREEN_COLOR}✅ 身份验证成功！正在加载系统...${RESET}"
+            export git_password="$user_input"
+            echo -e "${BOLD}${CYAN_COLOR}🔑 Git 密码已保存到环境变量${RESET}"            
             echo -e "${BOLD}${MAGENTA_COLOR}════════════════════════════════════════════════════════════════${RESET}"
             sleep 2
             return 0
