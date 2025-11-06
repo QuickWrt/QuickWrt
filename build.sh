@@ -600,10 +600,6 @@ compile_source_code() {
             echo -e "${BOLD}${GREEN_COLOR}▶ 加速编译模式${RESET}"
             echo -e "  ${BOLD}${CYAN_COLOR}────────────────────────────────────────────────────────────${RESET}"
             
-            # 设置工具链变量
-            [ "$ENABLE_GLIBC" = "y" ] && LIBC=glibc || LIBC=musl
-            tools_suffix=""
-            
             # 下载预编译工具链
             echo -e "  ${BOLD}${YELLOW_COLOR}📥 下载预编译工具链...${RESET}"
             
@@ -613,11 +609,11 @@ compile_source_code() {
             if [ "$PLATFORM_ID" = "platform:el9" ]; then
                 TOOLCHAIN_URL="http://127.0.0.1:8080"
             else
-                TOOLCHAIN_URL="https://${github_proxy}github.com/QuickWrt/openwrt_caches/releases/download/openwrt-24.10"
+                TOOLCHAIN_URL="https://$github/QuickWrt/openwrt_caches/releases/download/openwrt-24.10"
             fi
             
             echo -e "    ${CYAN_COLOR}▶${RESET} 下载源: ${TOOLCHAIN_URL}"
-            echo -e "    ${CYAN_COLOR}▶${RESET} 目标文件: toolchain_${LIBC}_${toolchain_arch}_gcc-${gcc}.tar.zst"
+            echo -e "    ${CYAN_COLOR}▶${RESET} 目标文件: toolchain_musl_${toolchain_arch}_gcc-${gcc}.tar.zst"
             
             if curl -L ${TOOLCHAIN_URL}/toolchain_${LIBC}_${toolchain_arch}_gcc-${gcc}${tools_suffix}.tar.zst -o toolchain.tar.zst $CURL_BAR; then
                 echo -e "    ${GREEN_COLOR}✓${RESET} 工具链下载成功"
