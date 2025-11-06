@@ -605,7 +605,7 @@ compile_source_code() {
             
             # 确定工具链URL
             if [ "$(whoami)" = "zhao" ]; then
-                TOOLCHAIN_URL="http://127.0.0.1:8080"
+                TOOLCHAIN_URL="http://10.0.0.101:8080/openwrt_caches"
             else
                 TOOLCHAIN_URL="https://$github/QuickWrt/openwrt_caches/releases/download/openwrt-24.10"
             fi
