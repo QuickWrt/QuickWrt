@@ -309,10 +309,8 @@ prepare_source_code() {
         "00-prepare_base.sh"
         "01-prepare_base-mainline.sh" 
         "02-prepare_package.sh"
-        "03-convert_translation.sh"
         "04-fix_kmod.sh"
         "05-fix-source.sh"
-        "99_clean_build_cache.sh"
     )
 
     echo -e "  ${BOLD}${CYAN_COLOR}⟳${RESET} ${BOLD}开始执行构建脚本...${RESET}"
