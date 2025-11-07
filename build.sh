@@ -692,6 +692,48 @@ compile_source_code() {
     echo ""
 }
 
+### 私有源打包 ###
+private_source_packaging() {
+    echo -e "\n"
+    echo -e "${BOLD}${MAGENTA_COLOR}╭──────────────────────────────────────────────╮${RESET}"
+    echo -e "${BOLD}${MAGENTA_COLOR}│${RESET}   📦 ${CYAN_COLOR}私有源打包阶段${RESET}                               ${BOLD}${MAGENTA_COLOR}│${RESET}"
+    echo -e "${BOLD}${MAGENTA_COLOR}╰──────────────────────────────────────────────╯${RESET}"
+    echo
+
+    echo -e "${YELLOW_COLOR}⟳ 正在获取内核版本信息...${RESET}"
+    get_kernel_version=$(curl -s "$mirror/tags/kernel-6.12")
+    kmod_hash=$(echo -e "$get_kernel_version" | awk -F'HASH-' '{print $2}' | awk '{print $1}' | tail -1 | md5sum | awk '{print $1}')
+    kmodpkg_name=$(echo $(echo -e "$get_kernel_version" | awk -F'HASH-' '{print $2}' | awk '{print $1}')~${kmod_hash}-r1)
+
+    echo -e "${GREEN_COLOR}✔ 生成包名：${RESET}${BOLD}${CYAN_COLOR}${kmodpkg_name}${RESET}"
+    echo
+
+    if [ "$platform" = "x86_64" ]; then
+        echo -e "${BLUE_COLOR}→ 检测到平台：x86_64${RESET}"
+        cp -a bin/targets/x86/*/packages "$kmodpkg_name"
+        rm -f "$kmodpkg_name"/Packages*
+        cp -a bin/packages/x86_64/base/rtl88*-firmware*.ipk "$kmodpkg_name"/ 2>/dev/null || true
+    elif [ "$platform" = "rockchip" ]; then
+        echo -e "${BLUE_COLOR}→ 检测到平台：rockchip${RESET}"
+        cp -a bin/targets/rockchip/armv8*/packages "$kmodpkg_name"
+        rm -f "$kmodpkg_name"/Packages*
+        cp -a bin/packages/aarch64_generic/base/rtl88*-firmware*.ipk "$kmodpkg_name"/ 2>/dev/null || true
+    fi
+
+    echo
+    echo -e "${YELLOW_COLOR}🔏 正在执行签名操作...${RESET}"
+    bash kmod-sign "$kmodpkg_name"
+
+    echo -e "${YELLOW_COLOR}📦 正在打包文件...${RESET}"
+    tar zcf "aarch64-${kmodpkg_name}.tar.gz" "$kmodpkg_name"
+    rm -rf "$kmodpkg_name"
+
+    echo
+    echo -e "${GREEN_COLOR}🎉 打包完成！${RESET}"
+    echo -e "生成文件：${BOLD}${CYAN_COLOR}aarch64-${kmodpkg_name}.tar.gz${RESET}"
+    echo -e "${DIM}──────────────────────────────────────────────${RESET}\n"
+}
+
 # 主执行逻辑
 main() {
     show_usage
@@ -701,6 +743,7 @@ main() {
     setup_curl_progress
     prepare_source_code
     compile_source_code
+    private_source_packaging
 }
 
 main "$@"
