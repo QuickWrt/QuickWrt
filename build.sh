@@ -690,7 +690,7 @@ compile_source_code() {
 private_source_packaging() {
     echo -e "\n"
     echo -e "${BOLD}${MAGENTA_COLOR}╭──────────────────────────────────────────────╮${RESET}"
-    echo -e "${BOLD}${MAGENTA_COLOR}│${RESET}   📦 ${CYAN_COLOR}私有源打包阶段${RESET}                               ${BOLD}${MAGENTA_COLOR}│${RESET}"
+    echo -e "${BOLD}${MAGENTA_COLOR}│${RESET}              📦 ${CYAN_COLOR}私有源打包阶段${RESET}               ${BOLD}${MAGENTA_COLOR}│${RESET}"
     echo -e "${BOLD}${MAGENTA_COLOR}╰──────────────────────────────────────────────╯${RESET}"
     echo
 
@@ -716,6 +716,7 @@ private_source_packaging() {
 
     echo
     echo -e "${YELLOW_COLOR}🔏 正在执行签名操作...${RESET}"
+    chmod -R 777 kmod-ipk kmod-sign
     bash kmod-sign "$kmodpkg_name"
 
     echo -e "${YELLOW_COLOR}📦 正在打包文件...${RESET}"
