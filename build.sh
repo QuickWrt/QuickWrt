@@ -695,9 +695,9 @@ private_source_packaging() {
     echo
 
     echo -e "${YELLOW_COLOR}⟳ 正在获取内核版本信息...${RESET}"
-    get_kernel_version=$(curl -s "$mirror/tags/kernel-6.12")
+    get_kernel_version=$(cat include/kernel-6.12)
     kmod_hash=$(echo -e "$get_kernel_version" | awk -F'HASH-' '{print $2}' | awk '{print $1}' | tail -1 | md5sum | awk '{print $1}')
-    kmodpkg_name=$(echo $(echo -e "$get_kernel_version" | awk -F'HASH-' '{print $2}' | awk '{print $1}')~${kmod_hash}-r1)
+    kmodpkg_name=$(echo $(echo -e "$get_kernel_version" | awk -F'HASH-' '{print $2}' | awk '{print $1}')~$(echo $kmod_hash)-r1)
 
     echo -e "${GREEN_COLOR}✔ 生成包名：${RESET}${BOLD}${CYAN_COLOR}${kmodpkg_name}${RESET}"
     echo
