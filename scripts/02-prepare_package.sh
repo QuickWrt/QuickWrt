@@ -121,6 +121,10 @@ sed -i 's/解除网易云音乐播放限制/网易云音乐解锁/g' package/new
 
 # Theme
 git clone https://$github/sbwml/luci-theme-argon package/new/luci-theme-argon --depth=1
+curl -s $mirror/openwrt/img/bg.webp > package/new/luci-theme-argon/luci-theme-argon/htdocs/luci-static/argon/img/bg.webp
+sed -i "s/#5e72e4/#31a1a1/g" package/new/luci-theme-argon/luci-app-argon-config/root/etc/config/argon
+sed -i "s/#483d8b/#31a1a1/g" package/new/luci-theme-argon/luci-app-argon-config/root/etc/config/argon
+sed -i "s/0.2/0.5/g" package/new/luci-theme-argon/luci-app-argon-config/root/etc/config/argon
 
 # Mosdns
 git clone https://$github/sbwml/luci-app-mosdns -b v5 package/new/mosdns --depth=1
