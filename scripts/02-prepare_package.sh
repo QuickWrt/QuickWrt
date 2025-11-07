@@ -120,7 +120,7 @@ git clone https://$github/UnblockNeteaseMusic/luci-app-unblockneteasemusic packa
 sed -i 's/解除网易云音乐播放限制/网易云音乐解锁/g' package/new/luci-app-unblockneteasemusic/root/usr/share/luci/menu.d/luci-app-unblockneteasemusic.json
 
 # Theme
-git clone https://$github/sbwml/luci-theme-argon package/new/luci-theme-argon --depth=1
+git clone https://$github/QuickWrt/luci-theme-argon package/new/luci-theme-argon --depth=1
 curl -s $mirror/openwrt/img/bg.webp > package/new/luci-theme-argon/luci-theme-argon/htdocs/luci-static/argon/img/bg.webp
 sed -i "s/#5e72e4/#31a1a1/g" package/new/luci-theme-argon/luci-app-argon-config/root/etc/config/argon
 sed -i "s/#483d8b/#31a1a1/g" package/new/luci-theme-argon/luci-app-argon-config/root/etc/config/argon
