@@ -127,7 +127,6 @@ fi
 
 # 检查第一个参数是否为支持的架构
 if [[ ! " ${supported_boards[@]} " =~ " ${platform} " ]]; then
-    echo -e "${BOLD}${RED_COLOR}❌ 错误：不支持的架构 '$platform'！${RESET}"
     show_usage
     exit 1
 fi
@@ -136,14 +135,9 @@ fi
 if [ $# -ge 2 ] && [ -n "$2" ]; then
     build_mode_input="$2"
     if [[ ! " ${supported_build_modes[@]} " =~ " ${build_mode_input} " ]]; then
-        echo -e "${BOLD}${RED_COLOR}❌ 错误：不支持的编译模式 '$build_mode_input'！${RESET}"
         show_usage
         exit 1
     fi
-else
-    build_mode_input="accelerated"
-    echo -e "${BOLD}${YELLOW_COLOR}⚠️  未指定编译模式，使用默认模式: accelerated${RESET}"
-    echo ""
 fi
 
 # 编译模式设置
@@ -743,7 +737,9 @@ main() {
     setup_curl_progress
     prepare_source_code
     compile_source_code
-    private_source_packaging
+    if [[ "$build_mode_input" != "toolchain-only" ]]; then
+        private_source_packaging
+    fi
 }
 
 main "$@"
