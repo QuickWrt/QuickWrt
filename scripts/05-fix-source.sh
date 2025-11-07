@@ -98,6 +98,8 @@ if [ "$gcc" = 15 ]; then
     sed -i '/CONFIGURE_ARGS/i TARGET_CFLAGS += -std=gnu17\n' feeds/packages/utils/jq/Makefile
     # coova-chilli - fix gcc 15 c23
     sed -i '/TARGET_CFLAGS/s/$/ -std=gnu17/' feeds/packages/net/coova-chilli/Makefile
+    # oniguruma
+    sed -i '/CONFIGURE_ARGS/i TARGET_CFLAGS += -std=gnu17\n' feeds/packages/libs/oniguruma/Makefile
 fi
 
 # ksmbd luci
