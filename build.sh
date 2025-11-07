@@ -230,18 +230,21 @@ prepare_source_code() {
     echo -e "${BOLD}${WHITE}                   克隆源代码 [2/7]${RESET}"
     echo -e "${BOLD}${BLUE_COLOR}■ ■ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □${RESET}"
     echo ""
-    
+
+    # 根据用户选择克隆地址（zhao 用局域网，否则用 GitHub）
+    git_url=$([ "$(whoami)" = "zhao" ] && echo "http://10.0.0.101:3000/zhao/openwrt" || echo "https://github.com/openwrt/openwrt")
+
     echo -e "  ${BOLD}${CYAN_COLOR}⟳${RESET} ${BOLD}开始克隆源代码仓库...${RESET}"
     echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
-    echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 📦 仓库: ${CYAN_COLOR}https://github.com/openwrt/openwrt${RESET}"
+    echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 📦 仓库: ${CYAN_COLOR}$git_url${RESET}"
     echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 🏷️  版本: ${YELLOW_COLOR}v$tag_version${RESET}"
     echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
-    
+
     # 显示克隆进度
     echo -e "  ${BOLD}${CYAN_COLOR}⟳${RESET} ${BOLD}正在下载源代码，请稍候...${RESET}"
-    
+
     # 克隆源代码（隐藏所有错误输出）
-    if git -c advice.detachedHead=false clone --depth=1 --branch "v$tag_version" --single-branch --quiet https://github.com/openwrt/openwrt && cd openwrt 2>/dev/null; then
+    if git -c advice.detachedHead=false clone --depth=1 --branch "v$tag_version" --single-branch --quiet "$git_url" && cd openwrt 2>/dev/null; then
         echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
         echo -e "  ${BOLD}${GREEN_COLOR}✓${RESET} ${BOLD}源代码克隆成功${RESET}"
         echo -e "  ${BOLD}${YELLOW_COLOR}➤${RESET} ${BOLD}存储位置: ${GREEN_COLOR}$(pwd)/openwrt${RESET}"
@@ -262,10 +265,25 @@ prepare_source_code() {
     echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 📁 目标文件: ${CYAN_COLOR}feeds.conf.default${RESET}"
     echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
     echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 🔄 正在更新软件源配置...${RESET}"
-    sed -i 's#^src-git packages .*#src-git packages https://github.com/openwrt/packages.git;openwrt-24.10#' feeds.conf.default
-    sed -i 's#^src-git luci .*#src-git luci https://github.com/openwrt/luci.git;openwrt-24.10#' feeds.conf.default
-    sed -i 's#^src-git routing .*#src-git routing https://github.com/openwrt/routing.git;openwrt-24.10#' feeds.conf.default
-    sed -i 's#^src-git telephony .*#src-git telephony https://github.com/openwrt/telephony.git;openwrt-24.10#' feeds.conf.default
+
+    # 判断用户选择镜像源
+    if [ "$(whoami)" = "zhao" ]; then
+        code_mirror="http://10.0.0.101:3000/zhao"
+        source_type="私人源"
+    else
+        code_mirror="https://github.com/openwrt"
+        source_type="官方源"
+    fi
+
+    # 输出当前使用源类型
+    echo -e "  ${BOLD}${CYAN_COLOR}ℹ${RESET} 当前使用源类型: ${BOLD}${YELLOW_COLOR}$source_type${RESET}"
+
+    # 统一替换 feeds
+    sed -i "s#^src-git packages .*#src-git packages $code_mirror/packages.git;openwrt-24.10#" feeds.conf.default
+    sed -i "s#^src-git luci .*#src-git luci $code_mirror/luci.git;openwrt-24.10#" feeds.conf.default
+    sed -i "s#^src-git routing .*#src-git routing $code_mirror/routing.git;openwrt-24.10#" feeds.conf.default
+    sed -i "s#^src-git telephony .*#src-git telephony $code_mirror/telephony.git;openwrt-24.10#" feeds.conf.default
+
     echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
     echo -e "  ${BOLD}${GREEN_COLOR}✓${RESET} ${BOLD}软件源配置完成${RESET}"
     echo -e "  ${BOLD}${YELLOW_COLOR}➤${RESET} ${BOLD}已更新 4 个软件源到 openwrt-24.10 分支${RESET}"
