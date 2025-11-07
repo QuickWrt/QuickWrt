@@ -12,7 +12,7 @@ git clone https://$github/sbwml/feeds_packages_lang_node-prebuilt feeds/packages
 git clone https://$github/QuickWrt/default-settings package/new/default-settings -b openwrt-24.10
 
 # wwan
-git clone https://$github/immortalwrt/wwan-packages package/new/wwan --depth=1
+git clone https://$github/sbwml/wwan-packages package/new/wwan --depth=1
 
 # luci-app-filemanager
 rm -rf feeds/luci/applications/luci-app-filemanager
