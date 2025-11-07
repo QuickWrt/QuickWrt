@@ -14,43 +14,30 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Git
-        run: |
-          git fetch --tags
+        run: git fetch --tags
 
-      - name: Get next version
+      - name: Read version from script
         id: version
         run: |
-          latest_tag=$(git tag --list "v*" | sort -V | tail -n1)
-          if [ -z "$latest_tag" ]; then
-            next_tag="v2.0"
-          else
-            base=${latest_tag#v}
-            major=$(echo $base | cut -d. -f1)
-            minor=$(echo $base | cut -d. -f2)
-            
-            if [ "$minor" -eq 20 ]; then
-              next_major=$((major + 1))
-              next_minor=0
-            else
-
-              next_major=$major
-              next_minor=$((minor + 1))
-            fi
-            
-            next_tag="v${next_major}.${next_minor}"
+          version_line=$(grep -E "^version=" build.sh | head -n1)
+          version_value=$(echo "$version_line" | sed -E "s/.*'(v[0-9]+\.[0-9]+\.[0-9]+).*/\1/")
+          if [ -z "$version_value" ]; then
+            echo "❌ 无法从脚本中读取版本号"
+            exit 1
           fi
-          echo "next_tag=$next_tag" >> $GITHUB_ENV
-          echo "Next version: $next_tag"
+          echo "VERSION=$version_value" >> $GITHUB_ENV
+          echo "📦 读取到版本号: $version_value"
 
       - name: Create archive
         run: |
           git archive --format=tar.gz -o QuickWrt.tar.gz HEAD
+          echo "✅ 打包完成: QuickWrt.tar.gz"
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ env.next_tag }}
-          name: ${{ env.next_tag }}
+          tag_name: ${{ env.VERSION }}
+          name: ${{ env.VERSION }}
           files: QuickWrt.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
