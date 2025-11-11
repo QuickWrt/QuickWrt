@@ -738,7 +738,9 @@ private_source_packaging() {
 # 主执行逻辑
 main() {
     show_usage
-    validate_password
+    if [ "$(whoami)" != "runner" ]; then
+        validate_password
+    fi
     show_banner
     setup_build_environment
     setup_curl_progress
