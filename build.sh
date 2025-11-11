@@ -239,7 +239,7 @@ prepare_source_code() {
     echo -e "  ${BOLD}${CYAN_COLOR}⟳${RESET} ${BOLD}正在下载源代码，请稍候...${RESET}"
 
     # 克隆源代码
-    if git clone $git_url >/dev/null 2>&1 && cd openwrt && git -c advice.detachedHead=false checkout v$tag_version >/dev/null 2>&1; then
+    if git clone $git_url >/dev/null 2>&1 && cd openwrt && git -c advice.detachedHead=false checkout v$tag_version >/dev/null 2>&1 && git describe --abbrev=0 --tags > version.txt; then
         echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
         echo -e "  ${BOLD}${GREEN_COLOR}✓${RESET} ${BOLD}源代码克隆成功${RESET}"
         echo -e "  ${BOLD}${YELLOW_COLOR}➤${RESET} ${BOLD}存储位置: ${GREEN_COLOR}$(pwd)/openwrt${RESET}"
