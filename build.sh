@@ -93,9 +93,9 @@ validate_password() {
 # 显示使用帮助
 show_usage() {
     clear
-    echo -e "${BOLD}${BLUE_COLOR}╔══════════════════════════════════════════════════════════════╗${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║                        📚 使用帮助 📚                        ║${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}╚══════════════════════════════════════════════════════════════╝${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}============================================================${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}                      📚 使用帮助 📚${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}============================================================${RESET}"
     echo ""
     echo -e "${BOLD}${CYAN_COLOR}📖 使用方法:${RESET}"
     echo -e "  ${BOLD}bash $0 <architecture> [build_mode]${RESET}"
@@ -156,34 +156,35 @@ case "$build_mode_input" in
         ;;
 esac
 
-# 打印
+# 打印横幅
 show_banner() {
     clear
     echo -e ""
-    echo -e "${BOLD}${BLUE_COLOR}╔══════════════════════════════════════════════════════════════════╗${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET}                       ZeroWRT 自动化构建系统                     ${BOLD}${BLUE_COLOR}║${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}╠══════════════════════════════════════════════════════════════════╣${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET}                                                                  ${BOLD}${BLUE_COLOR}║${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET}${BOLD}${BLUE_COLOR}   ██████╗███████╗██████╗  ██████╗ ██╗    ██╗██████╗ ████████╗    ${RESET}${BOLD}${BLUE_COLOR}║${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET}${BOLD}${CYAN_COLOR}   ╚══███╔╝██╔════╝██╔══██╗██╔═══██╗██║    ██║██╔══██╗╚══██╔══╝   ${RESET}${BOLD}${BLUE_COLOR}║${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET}${BOLD}${CYAN_COLOR}     ███╔╝ █████╗  ██████╔╝██║   ██║██║ █╗ ██║██████╔╝   ██║      ${RESET}${BOLD}${BLUE_COLOR}║${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET}${BOLD}${YELLOW_COLOR}    ███╔╝  ██╔══╝  ██╔══██╗██║   ██║██║███╗██║██╔══██╗   ██║      ${RESET}${BOLD}${BLUE_COLOR}║${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET}${BOLD}${YELLOW_COLOR}   ███████╗███████╗██║  ██║╚██████╔╝╚███╔███╔╝██║  ██║   ██║      ${RESET}${BOLD}${BLUE_COLOR}║${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET}${BOLD}${YELLOW_COLOR}   ╚══════╝╚══════╝╚═╝  ╚═╝ ╚═════╝  ╚══╝╚══╝ ╚═╝  ╚═╝   ╚═╝      ${RESET}${BOLD}${BLUE_COLOR}║${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET}${BOLD}${YELLOW_COLOR}         Open Source · Tailored · High Performance                ${RESET}${BOLD}${BLUE_COLOR}║${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET}                                                                  ${BOLD}${BLUE_COLOR}║${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}╠══════════════════════════════════════════════════════════════════╣${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET} 🛠️  开发者: $author                                              ${BOLD}${BLUE_COLOR}║${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET} 🌐 博客: $blog                                     ${BOLD}${BLUE_COLOR}║${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET} 💡 理念: 开源 · 定制化 · 高性能                                  ${BOLD}${BLUE_COLOR}║${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET} 📦 版本: $version                                     ${BOLD}${BLUE_COLOR}║${RESET}"    
-    echo -e "${BOLD}${BLUE_COLOR}╠══════════════════════════════════════════════════════════════════╣${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET} 🔧 构建开始: $(date '+%Y-%m-%d %H:%M:%S')                                 ${BOLD}${BLUE_COLOR}║${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET} ⚡ 处理器核心: $cpu_cores 个                                              ${BOLD}${BLUE_COLOR}║${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET} 🐧 系统用户: $(whoami)                                                ${BOLD}${BLUE_COLOR}║${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET} 🔬 GCC 版本: $gcc                                                  ${BOLD}${BLUE_COLOR}║${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║${RESET} 🚀 编译模式: $build_mode                                            ${BOLD}${BLUE_COLOR}║${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}╚══════════════════════════════════════════════════════════════════╝${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}==============================================================${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}              ZeroWRT 自动化构建系统${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}==============================================================${RESET}"
+    echo -e ""
+    echo -e "${BOLD}${BLUE_COLOR}   ███████╗███████╗██████╗  ██████╗ ██╗    ██╗██████╗ ████████╗${RESET}"
+    echo -e "${BOLD}${CYAN_COLOR}   ╚══███╔╝██╔════╝██╔══██╗██╔═══██╗██║    ██║██╔══██╗╚══██╔══╝${RESET}"
+    echo -e "${BOLD}${CYAN_COLOR}     ███╔╝ █████╗  ██████╔╝██║   ██║██║ █╗ ██║██████╔╝   ██║   ${RESET}"
+    echo -e "${BOLD}${YELLOW_COLOR}    ███╔╝  ██╔══╝  ██╔══██╗██║   ██║██║███╗██║██╔══██╗   ██║   ${RESET}"
+    echo -e "${BOLD}${YELLOW_COLOR}   ███████╗███████╗██║  ██║╚██████╔╝╚███╔███╔╝██║  ██║   ██║   ${RESET}"
+    echo -e "${BOLD}${YELLOW_COLOR}   ╚══════╝╚══════╝╚═╝  ╚═╝ ╚═════╝  ╚══╝╚══╝ ╚═╝  ╚═╝   ╚═╝   ${RESET}"
+    echo -e ""
+    echo -e "${BOLD}${YELLOW_COLOR}         Open Source · Tailored · High Performance${RESET}"
+    echo -e ""
+    echo -e "${BOLD}${BLUE_COLOR}--------------------------------------------------------------${RESET}"
+    echo -e "${BOLD}${CYAN_COLOR}🛠️  开发者: $author${RESET}"
+    echo -e "${BOLD}${CYAN_COLOR}🌐 博客: $blog${RESET}"
+    echo -e "${BOLD}${CYAN_COLOR}💡 理念: 开源 · 定制化 · 高性能${RESET}"
+    echo -e "${BOLD}${CYAN_COLOR}📦 版本: $version${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}--------------------------------------------------------------${RESET}"
+    echo -e "${BOLD}${GREEN_COLOR}🔧 构建开始: $(date '+%Y-%m-%d %H:%M:%S')${RESET}"
+    echo -e "${BOLD}${GREEN_COLOR}⚡ 处理器核心: $cpu_cores 个${RESET}"
+    echo -e "${BOLD}${GREEN_COLOR}🐧 系统用户: $(whoami)${RESET}"
+    echo -e "${BOLD}${GREEN_COLOR}🔬 GCC 版本: $gcc${RESET}"
+    echo -e "${BOLD}${GREEN_COLOR}🚀 编译模式: $build_mode${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}==============================================================${RESET}"
     echo -e ""
 }
 
@@ -237,8 +238,8 @@ prepare_source_code() {
     # 显示克隆进度
     echo -e "  ${BOLD}${CYAN_COLOR}⟳${RESET} ${BOLD}正在下载源代码，请稍候...${RESET}"
 
-    # 克隆源代码（隐藏所有错误输出）
-    if git -c advice.detachedHead=false clone --depth=1 --branch "v$tag_version" --single-branch --quiet "$git_url" && cd openwrt 2>/dev/null; then
+    # 克隆源代码
+    if git -c advice.detachedHead=false clone --depth=1 --branch "v$tag_version" --single-branch --no-tags --quiet "$git_url" && cd openwrt 2>/dev/null; then
         echo -e "  ${BOLD}${MAGENTA_COLOR}│${RESET}"
         echo -e "  ${BOLD}${GREEN_COLOR}✓${RESET} ${BOLD}源代码克隆成功${RESET}"
         echo -e "  ${BOLD}${YELLOW_COLOR}➤${RESET} ${BOLD}存储位置: ${GREEN_COLOR}$(pwd)/openwrt${RESET}"
@@ -537,9 +538,9 @@ prepare_source_code() {
 
 # 编译执行函数
 compile_source_code() {
-    echo -e "${BOLD}${BLUE_COLOR}╔══════════════════════════════════════════════════════════════╗${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║                     🚀 编译阶段开始 🚀                       ║${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}╚══════════════════════════════════════════════════════════════╝${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}============================================================${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}                     🚀 编译阶段开始 🚀${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}============================================================${RESET}"
     echo ""
     
     # 显示编译配置信息
@@ -672,9 +673,9 @@ compile_source_code() {
     esac
 
     echo ""
-    echo -e "${BOLD}${BLUE_COLOR}╔══════════════════════════════════════════════════════════════╗${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}║                     🎉 编译阶段完成 🎉                       ║${RESET}"
-    echo -e "${BOLD}${BLUE_COLOR}╚══════════════════════════════════════════════════════════════╝${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}============================================================${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}                     🎉 编译阶段完成 🎉${RESET}"
+    echo -e "${BOLD}${BLUE_COLOR}============================================================${RESET}"
     echo ""
     
     # 显示完成信息
@@ -689,10 +690,10 @@ compile_source_code() {
 ### 私有源打包 ###
 private_source_packaging() {
     echo -e "\n"
-    echo -e "${BOLD}${MAGENTA_COLOR}╭──────────────────────────────────────────────╮${RESET}"
-    echo -e "${BOLD}${MAGENTA_COLOR}│${RESET}              📦 ${CYAN_COLOR}私有源打包阶段${RESET}               ${BOLD}${MAGENTA_COLOR}│${RESET}"
-    echo -e "${BOLD}${MAGENTA_COLOR}╰──────────────────────────────────────────────╯${RESET}"
-    echo
+    echo -e "${BOLD}${MAGENTA_COLOR}────────────────────────────────────────────────${RESET}"
+    echo -e "${BOLD}${MAGENTA_COLOR}              📦 ${CYAN_COLOR}私有源打包阶段${RESET}${BOLD}${MAGENTA_COLOR}              ${RESET}"
+    echo -e "${BOLD}${MAGENTA_COLOR}────────────────────────────────────────────────${RESET}"
+    echo ""
 
     echo -e "${YELLOW_COLOR}⟳ 正在获取内核版本信息...${RESET}"
     get_kernel_version=$(cat include/kernel-6.12)
