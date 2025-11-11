@@ -751,7 +751,7 @@ generate_ota_file() {
         SHA256=$(sha256sum bin/targets/x86/64*/*-generic-squashfs-combined-efi.img.gz | awk '{print $1}')
         
         echo -e "  ${BOLD}${YELLOW_COLOR}➤${RESET} ${BOLD}生成固件信息...${RESET}"
-        cat > ota/fw.json <<EOF
+        cat > ota/x86_64.json <<EOF
 {
   "x86_64": [
     {
