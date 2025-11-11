@@ -707,26 +707,31 @@ private_source_packaging() {
         cp -a bin/targets/x86/*/packages "$kmodpkg_name"
         rm -f "$kmodpkg_name"/Packages*
         cp -a bin/packages/x86_64/base/rtl88*-firmware*.ipk "$kmodpkg_name"/ 2>/dev/null || true
+    
+        echo
+        echo -e "${YELLOW_COLOR}🔏 正在执行签名操作...${RESET}"
+        chmod -R 777 kmod-ipk kmod-sign
+        bash kmod-sign "$kmodpkg_name"
+
+        echo -e "${YELLOW_COLOR}📦 正在打包文件...${RESET}"
+        tar zcf "x86_64-${kmodpkg_name}.tar.gz" "$kmodpkg_name"
+        rm -rf "$kmodpkg_name"
+    
     elif [ "$platform" = "rockchip" ]; then
         echo -e "${BLUE_COLOR}→ 检测到平台：rockchip${RESET}"
         cp -a bin/targets/rockchip/armv8*/packages "$kmodpkg_name"
         rm -f "$kmodpkg_name"/Packages*
         cp -a bin/packages/aarch64_generic/base/rtl88*-firmware*.ipk "$kmodpkg_name"/ 2>/dev/null || true
+    
+        echo
+        echo -e "${YELLOW_COLOR}🔏 正在执行签名操作...${RESET}"
+        chmod -R 777 kmod-ipk kmod-sign
+        bash kmod-sign "$kmodpkg_name"
+
+        echo -e "${YELLOW_COLOR}📦 正在打包文件...${RESET}"
+        tar zcf "armv8-${kmodpkg_name}.tar.gz" "$kmodpkg_name"
+        rm -rf "$kmodpkg_name"
     fi
-
-    echo
-    echo -e "${YELLOW_COLOR}🔏 正在执行签名操作...${RESET}"
-    chmod -R 777 kmod-ipk kmod-sign
-    bash kmod-sign "$kmodpkg_name"
-
-    echo -e "${YELLOW_COLOR}📦 正在打包文件...${RESET}"
-    tar zcf "aarch64-${kmodpkg_name}.tar.gz" "$kmodpkg_name"
-    rm -rf "$kmodpkg_name"
-
-    echo
-    echo -e "${GREEN_COLOR}🎉 打包完成！${RESET}"
-    echo -e "生成文件：${BOLD}${CYAN_COLOR}aarch64-${kmodpkg_name}.tar.gz${RESET}"
-    echo -e "${DIM}──────────────────────────────────────────────${RESET}\n"
 }
 
 # 主执行逻辑
