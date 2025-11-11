@@ -730,7 +730,7 @@ private_source_packaging() {
         bash kmod-sign "$kmodpkg_name"
 
         echo -e "${YELLOW_COLOR}📦 正在打包文件...${RESET}"
-        tar zcf "armv8-${kmodpkg_name}.tar.gz" "$kmodpkg_name"
+        tar zcf "aarch64-${kmodpkg_name}.tar.gz" "$kmodpkg_name"
         rm -rf "$kmodpkg_name"
     fi
 }
