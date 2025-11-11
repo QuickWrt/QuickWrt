@@ -512,9 +512,18 @@ prepare_source_code() {
     } >> .config
     
     echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${GREEN_COLOR}✓${RESET} ${BOLD}GCC ${gcc} 配置完成${RESET}"
+
+    # 配置 OTA 在线更新
+    echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 🌐 配置 OTA 在线更新...${RESET}"
+    {
+        echo -e "\n# OTA Online Update"
+        echo -e "CONFIG_PACKAGE_luci-app-ota=y\n"
+    } >> .config
+    
+    echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${GREEN_COLOR}✓${RESET} ${BOLD}OTA 在线更新配置完成${RESET}"
     
     # 生成 defconfig
-    echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ⚙️  生成 defconfig...${RESET}"
+    echo -e "  ${BOLD}${MAGENTA_COLOR}├─ 🔄  生成 defconfig...${RESET}"
     if make defconfig > /dev/null 2>&1; then
         echo -e "  ${BOLD}${MAGENTA_COLOR}├─ ${GREEN_COLOR}✓${RESET} ${BOLD}defconfig 生成成功${RESET}"
     else
