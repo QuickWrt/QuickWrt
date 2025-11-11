@@ -12,7 +12,7 @@ export BOLD='\e[1m'
 export RESET='\e[0m'
 
 # 当前脚本版本号
-version='v1.2.1 (2025.11.06)'
+version='v1.2.2 (2025.11.11)'
 
 # 各变量默认值
 export author="OPPEN321"
