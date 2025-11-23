@@ -33,6 +33,13 @@ grep HASH include/kernel-6.12 | awk -F'HASH-' '{print $2}' | awk '{print $1}' | 
 rm -rf target/linux/generic
 git clone -b openwrt-24.10 https://zhao:$git_password@$gitea/zhao/target_linux_generic target/linux/generic
 
+# Necessary patch files
+pushd target/linux/generic/backport-6.12
+    curl -Os $mirror/openwrt/patch/kernel-6.12/regulator/830-01-v6.13-regulator-Add-of_regulator_get_optional-for-pure-DT.patch
+    curl -Os $mirror/openwrt/patch/kernel-6.12/regulator/830-02-v6.13-regulator-Add-devres-version-of-of_regulator_get_optional.patch
+    curl -Os $mirror/openwrt/patch/kernel-6.12/regulator/830-03-v6.15-regulator-Add-devm_-of_regulator_get.patch
+popd    
+
 # kernel modules
 rm -rf package/kernel/linux
 git checkout package/kernel/linux
