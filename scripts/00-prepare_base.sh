@@ -17,6 +17,18 @@ curl -s $mirror/openwrt/patch/generic-24.10/0003-rootfs-add-r-w-permissions-for-
 curl -s $mirror/openwrt/patch/generic-24.10/0004-rootfs-Add-support-for-local-kmod-installation-sourc.patch | patch -p1
 curl -s $mirror/openwrt/patch/generic-24.10/0013-kernel-add-olddefconfig-before-compilemodules.patch | patch -p1
 
+# Realtek driver - R8168 & R8125 & R8126 & R8152 & R8101 & r8127
+rm -rf package/kernel/{r8168,r8101,r8125,r8126,r8127}
+git clone https://$github/sbwml/package_kernel_r8168 package/kernel/r8168
+git clone https://$github/sbwml/package_kernel_r8152 package/kernel/r8152
+git clone https://$github/sbwml/package_kernel_r8101 package/kernel/r8101
+git clone https://$github/sbwml/package_kernel_r8125 package/kernel/r8125
+git clone https://$github/sbwml/package_kernel_r8126 package/kernel/r8126
+git clone https://$github/sbwml/package_kernel_r8127 package/kernel/r8127
+
+# GCC Optimization level -O3
+curl -s $mirror/openwrt/patch/target-modify_for_aarch64_x86_64.patch | patch -p1
+
 # Dwarves 1.25
 rm -rf tools/dwarves
 git clone https://$github/sbwml/tools_dwarves tools/dwarves
