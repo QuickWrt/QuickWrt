@@ -4,10 +4,6 @@
 # Enable compiler optimizations at O2 level for enhanced performance and efficiency
 sed -i 's/Os/O2/g' include/target.mk
 
-# Modify firmware name
-sed -i '/^VERSION_DIST:=$(if /c\VERSION_DIST:=$(if $(VERSION_DIST),$(VERSION_DIST),ZeroWrt)' include/version.mk
-sed -i '/^VERSION_MANUFACTURER:=$(if /c\VERSION_MANUFACTURER:=$(if $(VERSION_MANUFACTURER),$(VERSION_MANUFACTURER),ZeroWrt)' include/version.mk
-
 # Rockchip - rkbin & u-boot
 rm -rf package/boot/rkbin package/boot/uboot-rockchip package/boot/arm-trusted-firmware-rockchip
 git clone -b openwrt-24.10 https://zhao:$git_password@$gitea/zhao/uboot-rockchip package/boot/uboot-rockchip
@@ -20,6 +16,18 @@ curl -s $mirror/openwrt/patch/generic-24.10/0002-rootfs-add-upx-compression-supp
 curl -s $mirror/openwrt/patch/generic-24.10/0003-rootfs-add-r-w-permissions-for-UCI-configuration-fil.patch | patch -p1
 curl -s $mirror/openwrt/patch/generic-24.10/0004-rootfs-Add-support-for-local-kmod-installation-sourc.patch | patch -p1
 curl -s $mirror/openwrt/patch/generic-24.10/0013-kernel-add-olddefconfig-before-compilemodules.patch | patch -p1
+
+# Realtek driver - R8168 & R8125 & R8126 & R8152 & R8101 & r8127
+rm -rf package/kernel/{r8168,r8101,r8125,r8126,r8127}
+git clone https://$github/sbwml/package_kernel_r8168 package/kernel/r8168
+git clone https://$github/sbwml/package_kernel_r8152 package/kernel/r8152
+git clone https://$github/sbwml/package_kernel_r8101 package/kernel/r8101
+git clone https://$github/sbwml/package_kernel_r8125 package/kernel/r8125
+git clone https://$github/sbwml/package_kernel_r8126 package/kernel/r8126
+git clone https://$github/sbwml/package_kernel_r8127 package/kernel/r8127
+
+# GCC Optimization level -O3
+curl -s $mirror/openwrt/patch/target-modify_for_aarch64_x86_64.patch | patch -p1
 
 # Dwarves 1.25
 rm -rf tools/dwarves
@@ -47,33 +55,6 @@ sed -i "s/+luci /+luci-nginx /g" feeds/luci/collections/luci-ssl/Makefile
 sed -i 's/+uhttpd +uhttpd-mod-ubus /+luci-nginx /g' feeds/packages/net/wg-installer/Makefile
 sed -i '/uhttpd-mod-ubus/d' feeds/luci/collections/luci-light/Makefile
 sed -i 's/+luci-nginx \\$/+luci-nginx/' feeds/luci/collections/luci-light/Makefile
-
-# Use specific optimizations
-if [ "$arch" = "x86_64" ]; then
-    sed -i 's/O2/O2 -march=x86-64-v2/g' include/target.mk
-    sed -i 's,no-mips16 no-lto,no-mips16,g' feeds/packages/libs/libsodium/Makefile
-    echo '#!/bin/sh
-    # Put your custom commands here that should be executed once
-    # the system init finished. By default this file does nothing.
-
-    if ! grep "Default string" /tmp/sysinfo/model > /dev/null; then
-        echo should be fine
-    else
-        echo "Generic PC" > /tmp/sysinfo/model
-    fi
-
-    status=$(cat /sys/devices/system/cpu/intel_pstate/status)
-
-    if [ "$status" = "passive" ]; then
-        echo "active" | tee /sys/devices/system/cpu/intel_pstate/status
-    fi
-
-    exit 0
-    '> ./package/base-files/files/etc/rc.local
-elif [ "$arch" = "rockchip" ]; then
-    sed -i 's,-mcpu=generic,-march=armv8-a+crc+crypto,g' include/target.mk
-    sed -i 's,kmod-r8168,kmod-r8169,g' target/linux/rockchip/image/armv8.mk
-fi
 
 # Libubox
 sed -i '/TARGET_CFLAGS/ s/$/ -Os/' package/libs/libubox/Makefile
