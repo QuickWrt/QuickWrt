@@ -49,6 +49,19 @@ CONFIG_PACKAGE_kmod-drm-i915=y
 CONFIG_PACKAGE_kmod-sound-hda-codec-realtek=y
 CONFIG_PACKAGE_kmod-sound-hda-intel=y
 
+# Link time optimization
+CONFIG_USE_GC_SECTIONS=y
+CONFIG_USE_LTO=y
+
+# wwan
+CONFIG_PACKAGE_luci-app-3ginfo-lite=m
+CONFIG_PACKAGE_luci-app-modemband=m
+CONFIG_PACKAGE_luci-app-sms-tool-js=m
+CONFIG_PACKAGE_luci-proto-quectel=m
+# CONFIG_PACKAGE_fibocom-dial is not set
+CONFIG_PACKAGE_modemband=m
+CONFIG_PACKAGE_quectel-cm=m
+
 ### BPF
 CONFIG_DEVEL=y
 CONFIG_BPF_TOOLCHAIN_HOST=y
