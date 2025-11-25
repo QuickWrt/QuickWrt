@@ -4,6 +4,10 @@
 # Enable compiler optimizations at O2 level for enhanced performance and efficiency
 sed -i 's/Os/O2/g' include/target.mk
 
+# Modify firmware name
+sed -i '/^VERSION_DIST:=$(if /c\VERSION_DIST:=$(if $(VERSION_DIST),$(VERSION_DIST),ZeroWrt)' include/version.mk
+sed -i '/^VERSION_MANUFACTURER:=$(if /c\VERSION_MANUFACTURER:=$(if $(VERSION_MANUFACTURER),$(VERSION_MANUFACTURER),ZeroWrt)' include/version.mk
+
 # Rockchip - rkbin & u-boot
 rm -rf package/boot/rkbin package/boot/uboot-rockchip package/boot/arm-trusted-firmware-rockchip
 git clone -b openwrt-24.10 https://zhao:$git_password@$gitea/zhao/uboot-rockchip package/boot/uboot-rockchip
