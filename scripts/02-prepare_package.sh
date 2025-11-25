@@ -24,6 +24,12 @@ git clone https://$github/sbwml/luci-app-quickfile package/new/quickfile
 # luci-app-airplay2
 git clone https://$github/sbwml/luci-app-airplay2 package/new/airplay2
 
+# luci-app-bandix
+git clone https://github.com/timsaya/luci-app-bandix package/new/luci-app-bandix
+
+# openwrt-bandix
+git clone https://github.com/timsaya/openwrt-bandix package/new/openwrt-bandix
+
 # luci-app-webdav
 git clone https://$github/sbwml/luci-app-webdav package/new/luci-app-webdav
 
