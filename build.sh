@@ -717,6 +717,7 @@ private_source_packaging() {
         cp -a bin/targets/x86/*/packages "$kmodpkg_name"
         rm -f "$kmodpkg_name"/Packages*
         cp -a bin/packages/x86_64/base/rtl88*-firmware*.ipk "$kmodpkg_name"/ 2>/dev/null || true
+        cp -a bin/packages/x86_64/base/natflow*.ipk "$kmodpkg_name"/ 2>/dev/null || true
         cp -a bin/packages/x86_64/base/*3ginfo*.ipk "$kmodpkg_name"/ 2>/dev/null || true
         cp -a bin/packages/x86_64/base/*modemband*.ipk "$kmodpkg_name"/ 2>/dev/null || true
         cp -a bin/packages/x86_64/base/*sms-tool*.ipk "$kmodpkg_name"/ 2>/dev/null || true
@@ -736,6 +737,7 @@ private_source_packaging() {
         cp -a bin/targets/rockchip/armv8*/packages "$kmodpkg_name"
         rm -f "$kmodpkg_name"/Packages*
         cp -a bin/packages/aarch64_generic/base/rtl88*-firmware*.ipk "$kmodpkg_name"/ 2>/dev/null || true
+        cp -a bin/packages/aarch64_generic/base/natflow*.ipk "$kmodpkg_name"/ 2>/dev/null || true
         cp -a bin/packages/aarch64_generic/base/*3ginfo*.ipk "$kmodpkg_name"/ 2>/dev/null || true
         cp -a bin/packages/aarch64_generic/base/*modemband*.ipk "$kmodpkg_name"/ 2>/dev/null || true
         cp -a bin/packages/aarch64_generic/base/*sms-tool*.ipk "$kmodpkg_name"/ 2>/dev/null || true
