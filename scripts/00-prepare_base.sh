@@ -1,9 +1,5 @@
 #!/bin/bash -e
 
-### Core Settings ###
-# Enable compiler optimizations at O2 level for enhanced performance and efficiency
-sed -i 's/Os/O2/g' include/target.mk
-
 # Rockchip - rkbin & u-boot
 rm -rf package/boot/rkbin package/boot/uboot-rockchip package/boot/arm-trusted-firmware-rockchip
 git clone -b openwrt-24.10 https://zhao:$git_password@$gitea/zhao/uboot-rockchip package/boot/uboot-rockchip
