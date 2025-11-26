@@ -174,6 +174,10 @@ popd
 # openssl urandom
 sed -i "/-openwrt/iOPENSSL_OPTIONS += enable-ktls '-DDEVRANDOM=\"\\\\\"/dev/urandom\\\\\"\"\'\n" package/libs/openssl/Makefile
 
+# openssl - lto
+sed -i "s/ no-lto//g" package/libs/openssl/Makefile
+sed -i "/TARGET_CFLAGS +=/ s/\$/ -ffat-lto-objects/" package/libs/openssl/Makefile
+
 # nghttp3
 rm -rf feeds/packages/libs/nghttp3
 git clone https://$github/sbwml/package_libs_nghttp3 package/libs/nghttp3
