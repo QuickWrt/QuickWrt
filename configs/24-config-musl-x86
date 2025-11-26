@@ -65,6 +65,9 @@ CONFIG_KERNEL_LRNG=y
 # CONFIG_PACKAGE_urandom-seed is not set
 # CONFIG_PACKAGE_urngd is not set
 
+# mold
+CONFIG_USE_MOLD=y
+
 # wwan
 CONFIG_PACKAGE_luci-app-3ginfo-lite=m
 CONFIG_PACKAGE_luci-app-modemband=m
