@@ -355,7 +355,7 @@ function addLinks() {
         
         // 创建固件地址按钮
         var firmwareLink = document.createElement('a');
-        firmwareLink.href = 'https://openwrt.kejizero.online';
+        firmwareLink.href = 'https://zerowrt.kejizero.xyz';
         firmwareLink.target = '_blank';
         firmwareLink.className = 'cbi-button';
         firmwareLink.textContent = '固件地址';
