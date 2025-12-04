@@ -755,7 +755,7 @@ generate_ota_file() {
     if [ "$platform" = "x86_64" ]; then
         echo -e "  ${BOLD}${YELLOW_COLOR}➤${RESET} ${BOLD}平台: ${GREEN_COLOR}x86_64${RESET}"
         mkdir -p ota
-        OTA_URL="https://github.com/QuickWrt/ZeroWrt/releases/download"
+        OTA_URL="https://gh-proxy.kejizero.xyz/https://github.com/QuickWrt/ZeroWrt/releases/download"
         VERSION=$(sed 's/v//g' version.txt)
         SHA256=$(sha256sum bin/targets/x86/64*/*-generic-squashfs-combined-efi.img.gz | awk '{print $1}')
         
@@ -777,7 +777,7 @@ EOF
     elif [ "$platform" = "rockchip" ]; then
         echo -e "  ${BOLD}${YELLOW_COLOR}➤${RESET} ${BOLD}平台: ${GREEN_COLOR}rockchip${RESET}"
         mkdir -p ota
-        OTA_URL="https://github.com/QuickWrt/ZeroWrt/releases/download"
+        OTA_URL="https://gh-proxy.kejizero.xyz/https://github.com/QuickWrt/ZeroWrt/releases/download"
         VERSION=$(sed 's/v//g' version.txt)
         
         echo -e "  ${BOLD}${YELLOW_COLOR}➤${RESET} ${BOLD}计算各设备固件哈希值...${RESET}"
